@@ -45,6 +45,3 @@ JSON-LD(`.jsonld`) · Turtle(`.ttl`) · RDF/XML(`.rdf`) 중에서 고를 수 있
 | `guide.html` | 사용 안내 페이지 |
 | `tool.html` | 메타데이터 생성 도구 (단일 HTML, 의존성은 SheetJS CDN 하나) |
 
-## 배포
-
-GitHub Pages — Settings → Pages → Source: `main` / `(root)`
