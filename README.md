@@ -5,7 +5,7 @@
 
 ## 바로 쓰기
 
-- 사용 안내 — <https://kdyoung100.github.io/HealthDCAT-KR-Dataset-Description-Assistant/guide.html>
+- 사용 안내 — <https://kdyoung100.github.io/HealthDCAT-KR-Dataset-Description-Assistant/>
 - 생성 도구 — <https://kdyoung100.github.io/HealthDCAT-KR-Dataset-Description-Assistant/tool.html>
 
 프로파일 명세는 [HealthDCAT-KR](https://kdyoung100.github.io/HealthDCAT-KR/) 문서를 따릅니다.
@@ -42,6 +42,15 @@ JSON-LD(`.jsonld`) · Turtle(`.ttl`) · RDF/XML(`.rdf`) 중에서 고를 수 있
 
 | 파일 | 설명 |
 |---|---|
-| `guide.html` | 사용 안내 페이지 |
+| `index.html` | 사용 안내 페이지 — 사이트 첫 화면 |
 | `tool.html` | 메타데이터 생성 도구 (단일 HTML, 의존성은 SheetJS CDN 하나) |
+| `guide.html` | 이전 주소 유지용 리다이렉트 → `index.html` |
+| `.nojekyll` | Jekyll 전처리 생략 |
 
+안내문을 고칠 때는 `index.html`만 수정하면 됩니다. `guide.html`은 내용이 없는 리다이렉트 파일입니다.
+
+## 배포
+
+GitHub Pages — Settings → Pages → Source: `main` / `(root)`
+
+루트에 `index.html`이 없으면 GitHub Pages가 대신 이 README를 렌더링합니다.
