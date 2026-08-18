@@ -49,8 +49,3 @@ JSON-LD(`.jsonld`) · Turtle(`.ttl`) · RDF/XML(`.rdf`) 중에서 고를 수 있
 
 안내문을 고칠 때는 `index.html`만 수정하면 됩니다. `guide.html`은 내용이 없는 리다이렉트 파일입니다.
 
-## 배포
-
-GitHub Pages — Settings → Pages → Source: `main` / `(root)`
-
-루트에 `index.html`이 없으면 GitHub Pages가 대신 이 README를 렌더링합니다.
