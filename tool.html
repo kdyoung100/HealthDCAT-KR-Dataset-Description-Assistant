@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthDCAT-KR 메타데이터 생성</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --panel:#fff; --ink:#191f28; --muted:#8b95a1;
+    --line:#eef0f3; --line-strong:#dce0e6;
+    --brand:#3182f6; --brand2:#2272eb; --brand-soft:#eaf2ff;
+    --req:#ff8a3d; --req-soft:#fff3ea;
+    --rec:#3182f6; --rec-soft:#eaf2ff;
+    --sel:#8b95a1; --sel-soft:#f1f3f5;
+    --ok:#00b871; --err:#f04452; --err-soft:#feecee;
+    --r:14px;
+    --font:-apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo","Segoe UI","Malgun Gothic",sans-serif;
+  }
+  *{box-sizing:border-box}
+  /* display 값을 가진 요소도 hidden 속성이 항상 이기도록 */
+  [hidden]{display:none!important}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font-family:var(--font)}
+
+  header.top{background:var(--panel);border-bottom:1px solid var(--line);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  header.top h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.01em}
+  header.top .sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .langgrp{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+  .homelink{font-size:12.5px;font-weight:700;color:var(--brand);text-decoration:none;padding:8px 12px;border:1px solid var(--line-strong);border-radius:10px}
+  .homelink:hover{background:var(--brand-soft);border-color:var(--brand)}
+  .langgrp select{padding:8px 12px;border:none;border-radius:10px;background:var(--brand);color:#fff;font-weight:700;font-size:12px;cursor:pointer}
+
+  .wrap{max-width:1340px;margin:22px auto;padding:0 24px;display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start}
+  @media(max-width:1060px){.wrap{grid-template-columns:1fr}}
+
+  /* ===== 최상단 2분기 선택 ===== */
+  .picker{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  @media(max-width:520px){.picker{grid-template-columns:1fr}}
+  .pick{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;text-align:left;cursor:pointer;transition:.15s;display:flex;gap:12px;align-items:flex-start}
+  .pick:hover{border-color:var(--line-strong)}
+  .pick .ico{width:34px;height:34px;border-radius:10px;background:#f1f3f5;flex:none;display:grid;place-items:center;font-size:16px}
+  .pick b{display:block;font-size:15px}
+  .pick .qn{font-size:11.5px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .pick .cnt{font-size:12px;color:var(--muted);margin-top:4px}
+  .pick[aria-selected="true"]{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand);background:var(--brand-soft)}
+  .pick[aria-selected="true"] .ico{background:var(--brand);color:#fff}
+  .pick[aria-selected="true"] b{color:var(--brand)}
+
+  .toolbar{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line-strong);background:#fff;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer}
+  .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .chip.soon{border-style:dashed;color:#c2c8d0;background:#fafbfc;cursor:not-allowed}
+  .chip.soon:hover{border-color:var(--line-strong)}
+  .chip.soon .soontag{font-weight:800;font-size:10px;margin-left:5px;color:#aab2bb}
+  .spacer{margin-left:auto}
+  .tbtn{border:none;border-radius:10px;padding:9px 14px;font-size:12.5px;font-weight:700;cursor:pointer;background:#eef0f3;color:var(--ink)}
+  .tbtn:hover{background:#e4e7ec}
+  .tbtn.primary{background:var(--brand);color:#fff}
+  .tbtn.primary:hover{background:var(--brand2)}
+  .tbtn[aria-pressed="true"]{background:var(--brand-soft);color:var(--brand)}
+
+  .panelbox{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:6px 22px 22px}
+  .sectitle{display:flex;align-items:baseline;gap:10px;padding:18px 0 4px}
+  .sectitle h2{font-size:16px;margin:0}
+  .sectitle span{font-size:12px;color:var(--muted)}
+
+  /* ===== 필드 ===== */
+  .field{padding:16px 0;border-bottom:1px solid var(--line)}
+  .field:last-child{border-bottom:none}
+  .flabel{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .flabel .name{font-weight:700;font-size:14px}
+  .flabel .qn{font-size:11.5px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f6f7f9;padding:2px 7px;border-radius:6px}
+  .badge{font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px}
+  .badge.req{background:var(--req-soft);color:#c25a10}
+  .badge.rec{background:var(--rec-soft);color:var(--brand)}
+  .badge.sel{background:var(--sel-soft);color:var(--sel)}
+  .hint{font-size:12.5px;color:var(--muted);margin-bottom:8px;line-height:1.5}
+  input[type=text],input[type=url],input[type=email],input[type=number],input[type=date],select,textarea{
+    width:100%;padding:11px 13px;border:1px solid var(--line-strong);border-radius:10px;font-size:13.5px;background:#fff;color:var(--ink)}
+  textarea{min-height:78px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(49,130,246,.14)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center}
+  .row2 .sep{display:none}
+  @media(max-width:520px){.row2{grid-template-columns:1fr}}
+  .unit{display:flex;align-items:center;gap:8px}
+  .unit span{font-size:12.5px;color:var(--muted);white-space:nowrap}
+  .tagbox{display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1px solid var(--line-strong);border-radius:10px;background:#fff;min-height:44px}
+  .tagbox:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px rgba(49,130,246,.14)}
+  .tagbox input{border:none;flex:1;min-width:130px;padding:5px;font-size:13.5px}
+  .tagbox input:focus{box-shadow:none}
+  .pill{background:var(--brand-soft);color:var(--brand2);border-radius:8px;padding:4px 8px;font-size:12.5px;font-weight:700;display:inline-flex;gap:6px;align-items:center}
+  .pill b{cursor:pointer;opacity:.6;font-weight:800}
+  .pill b:hover{opacity:1}
+  .switch{display:inline-flex;align-items:center;gap:9px;font-size:13.5px;cursor:pointer}
+  .switch input{width:18px;height:18px;accent-color:var(--brand)}
+  .err-msg{display:none;color:var(--err);font-size:12px;margin-top:6px;font-weight:700}
+  .field.invalid input,.field.invalid textarea,.field.invalid select,.field.invalid .tagbox{border-color:var(--err);background:var(--err-soft)}
+  .field.invalid .err-msg{display:block}
+  .xlink{display:inline-flex;align-items:center;gap:6px;background:var(--brand-soft);color:var(--brand2);border:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer}
+
+  /* ===== 배포 카드 ===== */
+  .distcard{border:1px solid var(--line-strong);border-radius:12px;padding:4px 16px 14px;margin:14px 0;background:#fbfcfd}
+  .disthead{display:flex;align-items:center;gap:10px;padding:12px 0 2px;border-bottom:1px solid var(--line)}
+  .disthead b{font-size:14px}
+  .disthead .no{width:24px;height:24px;border-radius:7px;background:var(--brand);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center}
+  .del{margin-left:auto;border:none;background:#fff;border:1px solid var(--line-strong);color:var(--muted);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer}
+  .del:hover{color:var(--err);border-color:var(--err)}
+  .addrow{padding-top:6px}
+  .addbtn{width:100%;border:1px dashed var(--line-strong);background:#fff;border-radius:12px;padding:14px;font-size:13px;font-weight:700;color:var(--brand);cursor:pointer}
+  .addbtn:hover{border-color:var(--brand);background:var(--brand-soft)}
+  .empty{padding:26px 4px;color:var(--muted);font-size:13px}
+
+  /* ===== 표 보기 ===== */
+  table.spec{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+  table.spec th,table.spec td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left;vertical-align:top}
+  table.spec th{background:#f6f7f9;font-size:11.5px;color:var(--muted);position:sticky;top:0}
+  table.spec td.q{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);white-space:nowrap}
+  table.spec td.lv{text-align:center;font-weight:800;white-space:nowrap}
+  .lv-req{color:#e07a2c}.lv-rec{color:var(--brand)}.lv-sel{color:var(--muted)}.lv-non{color:#d5d9de}
+
+  /* ===== 사이드 ===== */
+  .side{position:sticky;top:22px;display:flex;flex-direction:column;gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+  .card h3{margin:0 0 12px;font-size:14px}
+  .prog{height:8px;border-radius:99px;background:#eef0f3;overflow:hidden;margin:4px 0 8px}
+  .prog i{display:block;height:100%;background:var(--brand);width:0;transition:width .25s}
+  .kv{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--line)}
+  .kv:last-child{border-bottom:none}
+  .kv b{font-weight:800}
+  pre.out{background:#0f172a;color:#d7e3f4;border-radius:12px;padding:14px;font-size:11.5px;line-height:1.5;overflow:auto;max-height:340px;margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-all}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:.2s;z-index:9}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  .legend{font-size:11.5px;color:var(--muted);line-height:1.7}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  /* ===== 반응형 ===== */
+  @media(max-width:1060px){
+    .side{position:static}
+  }
+  @media(max-width:720px){
+    header.top{padding:14px 16px}
+    header.top h1{font-size:15.5px}
+    .wrap{margin:14px auto;padding:0 14px;gap:14px}
+    .panelbox{padding:4px 14px 16px}
+    .card{padding:14px}
+    .toolbar{padding:10px 12px;gap:8px}
+    .toolbar .spacer{display:none}
+    .toolbar .chips{width:100%}
+    .tbtn{flex:1 1 auto;padding:10px 12px}
+    .fmtrow .tbtn{flex:1 1 45%}
+    .chip{padding:6px 11px}
+    .xstep{gap:10px;padding:16px 0}
+    .xnum{width:26px;height:26px;font-size:12px}
+    .dropzone{padding:20px}
+    .flabel{gap:6px}
+    .flabel .qn{font-size:10.5px}
+    .tblwrap{max-height:320px}
+    pre.out{max-height:240px;font-size:11px}
+    .sectitle{flex-direction:column;gap:2px}
+  }
+  @media(max-width:420px){
+    .flabel .qn{display:none}
+    .fmtrow .tbtn{flex:1 1 100%}
+  }
+
+  /* ===== 입력 방식 탭 ===== */
+  .modetabs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  @media(max-width:520px){.modetabs{grid-template-columns:1fr}}
+  .modetab{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;cursor:pointer;text-align:left;transition:.15s}
+  .modetab:hover{border-color:var(--line-strong)}
+  .modetab b{display:block;font-size:14.5px}
+  .modetab span{font-size:12px;color:var(--muted)}
+  .modetab[aria-selected="true"]{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+
+  /* ===== 엑셀 단계 ===== */
+  .xstep{display:flex;gap:14px;padding:20px 0;border-bottom:1px solid var(--line)}
+  .xstep:last-child{border-bottom:none}
+  .xnum{width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;display:grid;place-items:center;flex:none;font-size:13px}
+  .xbody{flex:1;min-width:0}
+  .xbody h3{margin:2px 0 5px;font-size:15px}
+  .xbody p{margin:0 0 12px;font-size:12.5px;color:var(--muted);line-height:1.6}
+  .dropzone{border:2px dashed var(--line-strong);border-radius:14px;padding:28px;text-align:center;cursor:pointer;background:#fbfcfd;transition:.15s}
+  .dropzone:hover,.dropzone.drag{border-color:var(--brand);background:var(--brand-soft)}
+  .dz-main{font-size:14px;font-weight:700}
+  .dz-sub{font-size:12px;color:var(--muted);margin-top:4px}
+  .xchips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .xchip{padding:7px 13px;border-radius:9px;font-size:12.5px;font-weight:800}
+  .xchip.ok{background:#e6f7ef;color:#00875a}
+  .xchip.bad{background:var(--err-soft);color:var(--err)}
+  .xchip.neutral{background:#f1f3f5;color:var(--muted)}
+  .tblwrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:420px}
+  table.prev{border-collapse:collapse;font-size:12px;white-space:nowrap;min-width:100%}
+  table.prev th,table.prev td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:7px 9px;text-align:left}
+  table.prev thead th{background:#f6f7f9;position:sticky;top:0;font-size:11px;color:var(--muted);font-weight:800}
+  table.prev thead th.req{color:#c25a10}
+  table.prev td.rowno{background:#fafbfc;color:var(--muted);font-weight:800;position:sticky;left:0}
+  table.prev td.cellbad{background:var(--err-soft);color:var(--err);font-weight:700}
+  table.prev td.cellok{color:var(--ink)}
+  .errlist{margin-top:12px;border:1px solid var(--err);background:var(--err-soft);border-radius:12px;padding:12px 14px;font-size:12.5px;color:#b3323c;max-height:220px;overflow:auto}
+  .errlist div{padding:3px 0}
+  .errlist b{font-weight:800}
+  .fmtrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  /* ===== 행 카드 미리보기 ===== */
+  .reclist{display:flex;flex-direction:column;gap:10px}
+  .rec{border:1px solid var(--line-strong);border-radius:12px;background:#fff;overflow:hidden}
+  .rec.bad{border-color:#ffc9a0}
+  .rechead{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:#fbfcfd}
+  .rec.bad .rechead{background:#fff8f3}
+  .rechead .rno{font-size:11px;font-weight:800;color:var(--muted);background:#eef0f3;border-radius:6px;padding:2px 7px;flex:none}
+  .rechead .rtitle{font-weight:700;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rechead .rstat{margin-left:auto;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px;flex:none}
+  .rstat.ok{background:#e6f7ef;color:#00875a}
+  .rstat.bad{background:var(--err-soft);color:var(--err)}
+  .rstat.wait{background:#f1f3f5;color:var(--muted)}
+  .recmeta{padding:0 14px 12px;font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+  .recmeta b{color:var(--ink);font-weight:700}
+  .recerr{padding:0 14px 12px;display:flex;gap:6px;flex-wrap:wrap}
+  .ecol{background:var(--err-soft);color:var(--err);border-radius:8px;padding:5px 9px;font-size:11.5px;font-weight:700}
+  .ecol span{font-weight:400;opacity:.85}
+  .recbody{border-top:1px solid var(--line);padding:6px 14px 12px}
+  .dl{display:grid;grid-template-columns:150px 1fr;gap:0}
+  @media(max-width:620px){.dl{grid-template-columns:1fr}.dl dt{padding-top:8px}}
+  .dl dt{font-size:12px;color:var(--muted);padding:7px 0;border-bottom:1px solid var(--line)}
+  .dl dd{margin:0;font-size:12.5px;padding:7px 0;border-bottom:1px solid var(--line);word-break:break-word}
+  .dl dd.miss{color:var(--err);font-weight:700}
+  .dl dd.blank{color:#c6ccd2}
+  .dl dt.reqk:after{content:'필수';font-size:9.5px;font-weight:800;color:#c25a10;background:var(--req-soft);border-radius:5px;padding:1px 5px;margin-left:6px}
+  .subdist{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fbfcfd;font-size:12.5px}
+  .subdist .sd-h{font-size:11.5px;font-weight:800;color:var(--muted);margin-bottom:6px}
+  .subdist code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--brand2)}
+  .recmore{border:none;background:transparent;color:var(--brand);font-size:12px;font-weight:700;cursor:pointer;padding:0 14px 12px}
+  /* ===== 업로드 슬롯 ===== */
+  .uprow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:620px){.uprow{grid-template-columns:1fr}}
+  .upslot{min-width:0}
+  .upname{font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px}
+  .upslot .dropzone{padding:20px 14px}
+  .upslot .dropzone.filled{border-style:solid;border-color:var(--ok);background:#f3fbf7}
+  .filechip{display:flex;align-items:center;gap:8px;margin-top:8px;border:1px solid var(--line-strong);border-radius:10px;padding:9px 10px;background:#fff}
+  .filechip .fc-body{min-width:0;flex:1}
+  .filechip b{display:block;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .filechip span span,.filechip .fc-body>span{font-size:11.5px;color:var(--muted)}
+  .fc-x{flex:none;width:24px;height:24px;border-radius:7px;border:1px solid var(--line-strong);background:#fff;color:var(--muted);font-size:14px;font-weight:800;line-height:1;cursor:pointer}
+  .fc-x:hover{border-color:var(--err);color:var(--err);background:var(--err-soft)}
+  /* ===== 배포 건수 펼쳐보기 ===== */
+  .kvlink{color:var(--brand);cursor:pointer;font-weight:800;background:none;border:none;padding:0;font-size:12.5px;font-family:var(--font)}
+  .kvlink:after{content:' ▾';font-size:10px}
+  .kvlink[aria-expanded="true"]:after{content:' ▴'}
+  .peek{margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .peek .pk{display:block;width:100%;text-align:left;border:none;background:#fff;border-bottom:1px solid var(--line);padding:9px 11px;cursor:pointer;font-family:var(--font);font-size:12px;line-height:1.5}
+  .peek .pk:last-child{border-bottom:none}
+  .peek .pk:hover{background:var(--brand-soft)}
+  .peek .pk b{display:block;font-size:12.5px;color:var(--ink)}
+  .peek .pk span{color:var(--muted);word-break:break-all}
+  .peek .pk.warn b{color:var(--err)}
+  .peek .pkempty{padding:12px;font-size:12px;color:var(--muted)}
+  .peek .pkhead{padding:8px 11px;background:#f6f7f9;font-size:11px;font-weight:800;color:var(--muted);border-bottom:1px solid var(--line)}
+  .peek{max-height:320px;overflow:auto}
+  .field.jump{box-shadow:0 0 0 2px var(--brand);border-radius:10px}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<header class="top">
+  <div>
+    <h1>HealthDCAT-KR 메타데이터 생성</h1>
+    <div class="sub">데이터셋(dcat:Dataset) · 배포(dcat:Distribution) 항목을 나눠서 작성합니다</div>
+  </div>
+  <div class="langgrp">
+    <a class="homelink" href="guide.html">사용 안내</a>
+    <label for="langSel">기본 언어</label>
+    <select id="langSel"><option value="ko" selected>한국어</option><option value="en">English</option></select>
+  </div>
+</header>
+
+<div class="wrap">
+  <div>
+    <!-- 입력 방식 -->
+    <div class="modetabs" role="tablist" aria-label="입력 방식">
+      <button class="modetab" role="tab" data-mode="manual" aria-selected="true">
+        <b>직접 입력</b><span>항목을 하나씩 작성 · 1건</span>
+      </button>
+      <button class="modetab" role="tab" data-mode="excel" aria-selected="false">
+        <b>엑셀로 일괄 등록</b><span>양식 내려받기 → 작성 → 업로드 · 여러 건</span>
+      </button>
+    </div>
+
+    <div id="manualMode">
+    <!-- 데이터셋 / 배포 선택 -->
+    <div class="picker" role="tablist" aria-label="작성 대상 선택">
+      <button class="pick" role="tab" id="tab-dataset" data-target="dataset" aria-selected="true">
+        <span class="ico">▤</span>
+        <span>
+          <b>데이터셋</b>
+          <span class="qn">dcat:Dataset</span>
+          <span class="cnt" id="cnt-dataset"></span>
+        </span>
+      </button>
+      <button class="pick" role="tab" id="tab-distribution" data-target="distribution" aria-selected="false">
+        <span class="ico">⇩</span>
+        <span>
+          <b>데이터 배포방식</b>
+          <span class="qn">dcat:Distribution</span>
+          <span class="cnt" id="cnt-distribution"></span>
+        </span>
+      </button>
+    </div>
+
+    <div class="toolbar">
+      <div class="chips" id="filters">
+        <button class="chip" data-f="all" aria-pressed="true">전체</button>
+        <button class="chip" data-f="필수" aria-pressed="false">필수</button>
+        <button class="chip" data-f="권장" aria-pressed="false">권장</button>
+        <button class="chip soon" data-f="선택" data-soon="1" aria-disabled="true" aria-pressed="false" title="선택 항목은 업데이트 예정입니다">선택<span class="soontag">업데이트 예정</span></button>
+      </div>
+      <span class="spacer"></span>
+      <button class="tbtn" id="btnTable" aria-pressed="false">속성 표로 보기</button>
+      <button class="tbtn" id="btnValidate">필수값 검증</button>
+      <button class="tbtn primary" data-dl="jsonld" title="HealthDCAT-KR_데이터셋이름_데이터셋.jsonld · _배포.jsonld 두 파일">JSON-LD</button>
+      <button class="tbtn primary" data-dl="ttl" title="HealthDCAT-KR_데이터셋이름_데이터셋.ttl · _배포.ttl 두 파일">Turtle</button>
+      <button class="tbtn primary" data-dl="rdf" title="HealthDCAT-KR_데이터셋이름_데이터셋.rdf · _배포.rdf 두 파일">RDF/XML</button>
+    </div>
+
+    <div class="panelbox">
+      <div class="sectitle"><h2 id="secName">데이터셋</h2><span id="secDesc"></span></div>
+      <div id="formArea"></div>
+      <div id="tableArea" hidden></div>
+    </div>
+    </div><!-- /manualMode -->
+
+    <!-- ===== 엑셀 일괄 등록 ===== -->
+    <div id="excelMode" hidden>
+      <div class="panelbox">
+        <div class="xstep">
+          <div class="xnum">1</div>
+          <div class="xbody">
+            <h3>양식 내려받기</h3>
+            <p><b>데이터셋 양식</b>과 <b>배포 양식</b>은 따로 받습니다. 두 파일 모두 1행 항목명 · 2행 속성명 · 3행 예시이고, <b>4행부터</b> 한 행에 하나씩 작성하세요.
+               배포 양식의 첫 열 <b>데이터셋식별자</b>(dct:identifier)로 데이터셋과 연결됩니다.</p>
+            <div class="fmtrow">
+              <button class="tbtn primary" data-tpl="ds:xlsx">데이터셋 양식 (.xlsx)</button>
+              <button class="tbtn" data-tpl="ds:csv">데이터셋 (.csv)</button>
+            </div>
+            <div class="fmtrow" style="margin-top:8px">
+              <button class="tbtn primary" data-tpl="dist:xlsx">배포 양식 (.xlsx)</button>
+              <button class="tbtn" data-tpl="dist:csv">배포 (.csv)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="xstep">
+          <div class="xnum">2</div>
+          <div class="xbody">
+            <h3>작성한 파일 올리기</h3>
+            <p>데이터셋 파일과 배포 파일을 <b>각각</b> 올립니다. 잘못 올렸으면 파일 옆 <b>×</b>를 눌러 빼면 됩니다. 검증은 두 파일을 함께 봅니다.</p>
+            <div class="uprow">
+              <div class="upslot">
+                <div class="upname">데이터셋 양식</div>
+                <div class="dropzone" data-slot="ds">
+                  <div class="dz-main">데이터셋 파일</div>
+                  <div class="dz-sub">끌어다 놓기 또는 클릭 · .xlsx / .csv</div>
+                </div>
+                <div class="filechip" id="fileDs" hidden>
+                  <span class="fc-body"><b></b><span></span></span>
+                  <button type="button" class="fc-x" data-drop="ds" title="이 파일 빼기" aria-label="데이터셋 파일 빼기">×</button>
+                </div>
+              </div>
+              <div class="upslot">
+                <div class="upname">배포 양식</div>
+                <div class="dropzone" data-slot="dist">
+                  <div class="dz-main">배포 파일</div>
+                  <div class="dz-sub">끌어다 놓기 또는 클릭 · .xlsx / .csv</div>
+                </div>
+                <div class="filechip" id="fileDist" hidden>
+                  <span class="fc-body"><b></b><span></span></span>
+                  <button type="button" class="fc-x" data-drop="dist" title="이 파일 빼기" aria-label="배포 파일 빼기">×</button>
+                </div>
+              </div>
+            </div>
+            <input type="file" id="xlFile" accept=".xlsx,.xls,.csv" multiple hidden>
+          </div>
+        </div>
+
+        <div class="xstep" id="xlStep3" hidden>
+          <div class="xnum">3</div>
+          <div class="xbody">
+            <h3>미리보기 · 검증</h3>
+            <div class="xchips" id="xlChips"></div>
+            <div class="fmtrow" style="margin-bottom:12px">
+              <button class="tbtn" id="xlValidate">검증하기</button>
+              <button class="tbtn" id="xlErrOnly" aria-pressed="false" hidden>오류 행만 보기</button>
+              <div class="chips" id="xlSheetTabs">
+                <button class="chip" data-sheet="dataset" aria-pressed="true">데이터셋</button>
+                <button class="chip" data-sheet="distribution" aria-pressed="false">배포</button>
+              </div>
+              <div class="chips" id="xlViewTabs">
+                <button class="chip" data-view="card" aria-pressed="true">행별 카드</button>
+                <button class="chip" data-view="table" aria-pressed="false">표</button>
+              </div>
+            </div>
+            <div class="fmtrow" style="margin-bottom:12px">
+              <button class="tbtn primary" data-xdl="jsonld" title="데이터셋 이름별로 따로 내려받습니다">JSON-LD</button>
+              <button class="tbtn primary" data-xdl="ttl" title="데이터셋 이름별로 따로 내려받습니다">Turtle</button>
+              <button class="tbtn primary" data-xdl="rdf" title="데이터셋 이름별로 따로 내려받습니다">RDF/XML</button>
+            </div>
+            <div id="xlPreview"></div>
+            <div id="xlErrors"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="card">
+      <h3 id="statTitle">작성 현황</h3>
+      <div id="statManual">
+        <div style="font-size:12.5px;color:var(--muted)">필수 항목 <b id="reqNow" style="color:var(--ink)">0</b> / <span id="reqAll">0</span></div>
+        <div class="prog"><i id="progBar"></i></div>
+        <div class="kv"><span>데이터셋 입력</span><button class="kvlink" id="kvDs" aria-expanded="false">0</button></div>
+        <div class="peek" id="dsPeek" hidden></div>
+        <div class="kv"><span>배포 건수</span><button class="kvlink" id="kvDist" aria-expanded="false">0건</button></div>
+        <div class="peek" id="distPeek" hidden></div>
+      </div>
+      <div id="statExcel" hidden>
+        <div style="font-size:12.5px;color:var(--muted)">필수 항목 통과 <b id="xReqNow" style="color:var(--ink)">0</b> / <span id="xReqAll">0</span> 셀</div>
+        <div class="prog"><i id="xProgBar"></i></div>
+        <div class="kv"><span>데이터셋 행</span><button class="kvlink" id="xKvDs" aria-expanded="false">0행</button></div>
+        <div class="peek" id="xDsPeek" hidden></div>
+        <div class="kv"><span>배포 행</span><button class="kvlink" id="xKvDist" aria-expanded="false">0행</button></div>
+        <div class="peek" id="xDistPeek" hidden></div>
+        <div class="kv"><span>연결 안 된 배포</span><b id="xKvOrphan">0행</b></div>
+        <div class="kv"><span>검증 오류</span><b id="xKvErr">검증 대기</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>구분 표기</h3>
+      <div class="legend">
+        <div><span class="badge req">필수</span> 반드시 기입 &nbsp; <span class="badge rec">권장</span> 권장 &nbsp; <span class="badge sel">선택</span> 선택</div>
+        <div style="margin-top:8px">항목마다 구분은 <b>하나</b>만 표시합니다.</div>
+        <div style="margin-top:6px">지금 화면에는 선택 항목이 없어 <b>선택</b> 거르기는 업데이트 예정입니다.</div>
+      </div>
+    </div>
+
+    <div class="card" id="fmtCard">
+      <h3>미리보기 <span id="fmtNote" style="font-weight:500;font-size:11.5px;color:var(--muted)"></span></h3>
+      <div class="chips" id="fmtTabs" style="margin-bottom:10px">
+        <button class="chip" data-fmt="jsonld" aria-pressed="true">JSON-LD</button>
+        <button class="chip" data-fmt="ttl" aria-pressed="false">Turtle</button>
+        <button class="chip" data-fmt="rdf" aria-pressed="false">RDF/XML</button>
+      </div>
+      <pre class="out" id="preview">{}</pre>
+    </div>
+  </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const LANG=()=>$('#langSel').value;
+
+/* ============================================================
+   항목 정의 — 원본 표의 순서/문구/구분을 그대로 옮김
+   lv:[구분①,구분②,구분③]  ''=해당 없음
+   ============================================================ */
+const DATASET=[
+ {id:'title',ko:'제목',qn:'dct:title',desc:'데이터셋의 이름을 기입',lv:['필수','필수','필수'],kind:'text',ph:'예: 국가 심혈관질환 등록자료 2024',max:200,json:'lang'},
+ {id:'description',ko:'설명',qn:'dct:description',desc:'데이터셋의 설명 기입',lv:['필수','필수','필수'],kind:'textarea',ph:'수집 대상, 범위, 구조 등을 서술',max:4000,json:'lang'},
+ {id:'theme',ko:'주제',qn:'dcat:theme',desc:'데이터셋의 카테고리를 참조. 데이터셋은 여러 테마와 연결 가능',lv:['권장','필수','필수'],kind:'tags',ph:'예: 보건통계, 만성질환 …',json:'langlist'},
+ {id:'accessRights',ko:'접근 권한',qn:'dct:accessRights',desc:'데이터에 대한 접근권한 기입',lv:['선택','필수','필수'],kind:'select',
+  opts:[['','선택하세요'],['PUBLIC','공개 (public)'],['RESTRICTED','제한 공개 (restricted)'],['NON_PUBLIC','비공개 (non-public)']],json:'uri',base:'http://publications.europa.eu/resource/authority/access-right/'},
+ {id:'identifier',ko:'식별자',qn:'dct:identifier',desc:'플랫폼에서 관리하는 데이터셋의 중복되지 않는 고유 식별자 기입',lv:['선택','필수','필수'],kind:'text',ph:'예: NDI-2026-000482'},
+ {id:'admsIdentifier',ko:'보조식별자',qn:'adms:identifier',desc:'MAST/ADS, DataCite, DOI, EZID 또는 W3ID와 같은 데이터셋의 보조 식별자 기입',lv:['선택','필수','필수'],kind:'scheme',ph:'예: 10.1234/abcd.2024',
+  opts:[['DOI','DOI'],['DATACITE','DataCite'],['MAST/ADS','MAST/ADS'],['EZID','EZID'],['W3ID','W3ID']]},
+ {id:'applicableLegislation',ko:'적용 가능한 법률',qn:'dcatap:applicableLegislation',desc:'데이터에 적용되는 법률·규정 또는 준수해야 하는 법적 근거',lv:['','','필수'],kind:'tags',ph:'예: 보건의료기본법, 개인정보 보호법'},
+ {id:'healthCategory',ko:'건강 분야',qn:'healthdcatap:healthCategory',desc:'데이터가 속하는 보건의료 분야 또는 질병 카테고리',lv:['','','필수'],kind:'tags',ph:'예: 순환기질환, 감염병'},
+ {id:'hdab',ko:'건강 데이터 접근 기관',qn:'healthdcatap:hdab',desc:'데이터 접근 승인 및 이용 절차를 관리하는 기관',lv:['','','필수'],kind:'text',ph:'예: 한국보건의료정보원'},
+ {id:'contactPoint',ko:'담당자 연락처',qn:'dcat:contactPoint',desc:'데이터셋 담당자에 대한 연락처 정보를 기입',lv:['권장','권장','권장'],kind:'contact'},
+ {id:'keyword',ko:'키워드',qn:'dcat:keyword',desc:'상품을 설명할 수 있는 대표 키워드 기입',lv:['권장','권장','권장'],kind:'tags',ph:'엔터로 추가',json:'langlist'},
+ {id:'publisher',ko:'데이터 발행기관',qn:'dct:publisher',desc:'데이터를 게재하여 제공하는 기관(플랫폼 사업자번호)의 정보 기입',lv:['권장','권장','권장'],kind:'text',ph:'예: 질병관리청'},
+ {id:'distribution',ko:'배포방식',qn:'dcat:distribution',desc:'배포방식에 대한 데이터세트를 의미하며, CSV·XLSX와 같이 특정한 파일 형태로 내려받거나 접근할 수 있는 배포본을 기입. 여러 개면 쉼표로 구분',lv:['','권장','권장'],kind:'formats',ph:'예: CSV, XLSX'},
+ {id:'spatial',ko:'지리적 범위',qn:'dct:spatial',desc:'데이터셋에서 다루는 지리적 지역',lv:['','권장','권장'],kind:'text',ph:'예: 대한민국 전역 / 서울특별시'},
+ {id:'temporal',ko:'기간',qn:'dct:temporal',desc:'데이터셋에서 다루는 기간',lv:['','권장','권장'],kind:'daterange',json:'period'},
+ {id:'hasPurpose',ko:'목적',qn:'dpv:hasPurpose',desc:'데이터 수집 또는 생성의 목적 및 활용 의도',lv:['','권장','권장'],kind:'tags',ph:'예: 공중보건 연구, 정책 수립'},
+ {id:'populationCoverage',ko:'인구범위',qn:'healthdcatap:populationCoverage',desc:'데이터가 포함하는 대상 인구 집단 범위',lv:['','권장','권장'],kind:'textarea',ph:'예: 2015~2024년 국내 건강보험 가입자 중 30세 이상',json:'lang'},
+ {id:'numberOfUniqueIndividuals',ko:'고유 개인 수',qn:'healthdcatap:numberOfUniqueIndividuals',desc:'데이터에 포함된 고유 환자(개인) 수',lv:['','권장','권장'],kind:'number',unit:'명',json:'num'},
+ {id:'numberOfRecords',ko:'전체 데이터 행 개수',qn:'healthdcatap:numberOfRecords',desc:'전체 데이터 레코드(행) 개수',lv:['','권장','권장'],kind:'number',unit:'행',json:'num'},
+ {id:'maxTypicalAge',ko:'최대 연령',qn:'healthdcatap:maxTypicalAge',desc:'데이터 대상자의 일반적인 최대 연령',lv:['','권장','권장'],kind:'number',unit:'세',json:'num'},
+ {id:'minTypicalAge',ko:'최소 연령',qn:'healthdcatap:minTypicalAge',desc:'데이터 대상자의 일반적인 최소 연령',lv:['','권장','권장'],kind:'number',unit:'세',json:'num'},
+ {id:'hasPersonalData',ko:'개인정보 포함 여부',qn:'dpv:hasPersonalData',desc:'개인정보 포함 여부 또는 개인정보 수준',lv:['','권장','권장'],kind:'personal'},
+ {id:'hasLegalBasis',ko:'법적 근거',qn:'dpv:hasLegalBasis',desc:'데이터 수집·처리의 법적 근거',lv:['','권장','권장'],kind:'tags',ph:'예: Consent, LegalObligation'},
+ {id:'retentionPeriod',ko:'데이터 보관 기간',qn:'healthdcatap:retentionPeriod',desc:'데이터 보관 기간',lv:['','권장','권장'],kind:'daterange',json:'period'},
+ {id:'custodian',ko:'데이터 관리기관',qn:'dct:publisher',desc:'데이터를 보유·관리하는 기관',lv:['','권장','권장'],kind:'text',ph:'예: 국민건강보험공단'},
+ {id:'hasCodingSystem',ko:'코딩 체계',qn:'healthdcatap:hasCodingSystem',desc:'사용된 의료 코드 체계 (예: ICD, SNOMED 등)',lv:['','권장','권장'],kind:'tags',ph:'예: ICD-10, SNOMED CT, KCD'},
+ {id:'healthTheme',ko:'(보건의료)주제',qn:'healthdcatap:healthTheme',desc:'보건의료 주제 분류',lv:['','권장','권장'],kind:'tags',ph:'예: 질병 예방, 의료 이용'},
+ {id:'hasCodeValues',ko:'코드 값',qn:'healthdcatap:hasCodeValues',desc:'코딩시스템의 코드 값 목록 또는 코드 정의 정보',lv:['','권장','권장'],kind:'tags',ph:'예: I10, E11.9'},
+ {id:'qualityAnnotation',ko:'품질 정보',qn:'dqv:hasQualityAnnotation',desc:'데이터 품질에 대한 설명 또는 평가 정보',lv:['','권장','권장'],kind:'textarea',ph:'결측률, 검증 절차, 품질 등급 등',json:'lang'}
+];
+
+const DISTRIBUTION=[
+ {id:'description',ko:'설명',qn:'dct:description',desc:'배포의 설명을 기입',lv:['권장','권장','권장'],kind:'textarea',ph:'배포 파일/서비스에 대한 설명',json:'lang'},
+ {id:'accessURL',ko:'접근 URL',qn:'dcat:accessURL',desc:'데이터셋의 배포에 대한 액세스 권한을 제공하는 URL. 액세스 URL 리소스에는 데이터셋을 가져오는 방법에 대한 정보 포함',lv:['필수','필수','필수'],kind:'url',ph:'https://…',json:'iri'},
+ {id:'availability',ko:'가용성',qn:'dcatap:availability',desc:'데이터셋이나 자원의 사용 가능성에 대한 상태 표현(available/unavailable)',lv:['','권장','권장'],kind:'select',
+  opts:[['','선택하세요'],['available','available (사용 가능)'],['unavailable','unavailable (사용 불가)']]},
+ {id:'format',ko:'파일 형식',qn:'dct:format',desc:'배포본이 제공되는 파일 형태를 고릅니다. CSV·XLSX와 같이 특정한 파일 형태로 지정하며, 메타데이터에는 매체유형(MIME Type)으로 기록됩니다',lv:['권장','권장','권장'],kind:'select',
+  opts:[['','선택하세요'],['CSV','CSV (text/csv)'],['XLSX','XLSX (Excel 통합문서)'],['XLS','XLS (Excel 97-2003)'],['JSON','JSON (application/json)'],['XML','XML (application/xml)'],['PDF','PDF (application/pdf)'],['HWPX','HWPX (한글)'],['TXT','TXT (text/plain)'],['ZIP','ZIP (압축 파일)'],['RDF','RDF/Turtle'],['API','API (Open API 호출)']]},
+ {id:'license',ko:'라이선스',qn:'dct:license',desc:'데이터셋 배포를 할 수 있는 라이센스를 기입',lv:['권장','권장','권장'],kind:'select',
+  opts:[['','선택하세요'],['KOGL-1','공공누리 제1유형'],['KOGL-2','공공누리 제2유형'],['KOGL-3','공공누리 제3유형'],['KOGL-4','공공누리 제4유형'],['CC-BY-4.0','CC BY 4.0'],['CC0-1.0','CC0 1.0'],['custom','기관 별도 협약']]}
+];
+
+const CTX={"dct":"http://purl.org/dc/terms/","dcat":"http://www.w3.org/ns/dcat#","adms":"http://www.w3.org/ns/adms#",
+ "foaf":"http://xmlns.com/foaf/0.1/","vcard":"http://www.w3.org/2006/vcard/ns#","dpv":"https://w3id.org/dpv#",
+ "healthdcatap":"http://healthdataportal.eu/ns/health#","dcatap":"http://data.europa.eu/r5r/","dqv":"http://www.w3.org/ns/dqv#"};
+
+/* ===== 상태 ===== */
+let TARGET='dataset', FILTER='all', TABLEVIEW=false;
+const ds={};                 // 데이터셋 값
+let dists=[{}], distSeq=1;   // 배포 값 목록
+
+const lvOf=f=>f.lv[2]||f.lv[1]||f.lv[0]||'';
+const cls=v=>v==='필수'?'req':v==='권장'?'rec':v==='선택'?'sel':'';
+const fieldsOf=t=>t==='dataset'?DATASET:DISTRIBUTION;
+
+/* ===== 렌더 ===== */
+function ctrl(f,val,onch,ns){
+  const v=val||{}, id=ns+'_'+f.id;
+  const set=(k,x)=>{ if(k===null){onch(x);}else{const o={...(val&&typeof val==='object'&&!Array.isArray(val)?val:{})};o[k]=x;onch(o);} };
+  const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  let h='';
+  switch(f.kind){
+    case 'text': case 'url': case 'email':
+      h=`<input type="${f.kind==='text'?'text':f.kind}" id="${id}" placeholder="${esc(f.ph||'')}" ${f.max?`maxlength="${f.max}"`:''} value="${esc(val||'')}">`;break;
+    case 'textarea':
+      h=`<textarea id="${id}" placeholder="${esc(f.ph||'')}" ${f.max?`maxlength="${f.max}"`:''}>${esc(val||'')}</textarea>`;break;
+    case 'number':
+      h=`<div class="unit"><input type="number" id="${id}" min="0" placeholder="0" value="${esc(val||'')}"><span>${f.unit||''}</span></div>`;break;
+    case 'select':
+      h=`<select id="${id}">`+f.opts.map(([o,l])=>`<option value="${esc(o)}" ${String(val||'')===o?'selected':''}>${esc(l)}</option>`).join('')+`</select>`;break;
+    case 'tags':
+      h=`<div class="tagbox" id="${id}_box">`+(val||[]).map((t,i)=>`<span class="pill">${esc(t)}<b data-rm="${i}">×</b></span>`).join('')
+        +`<input type="text" id="${id}" placeholder="${esc(f.ph||'엔터로 추가')}"></div>`;break;
+    case 'daterange':
+      h=`<div class="row2"><input type="date" id="${id}_s" value="${esc(v.start||'')}"><input type="date" id="${id}_e" value="${esc(v.end||'')}"></div>
+         <div class="hint" style="margin:6px 0 0">시작일 · 종료일</div>`;break;
+    case 'scheme':
+      h=`<div class="row2"><select id="${id}_sc">`+f.opts.map(([o,l])=>`<option value="${o}" ${(v.scheme||'DOI')===o?'selected':''}>${l}</option>`).join('')
+        +`</select><input type="text" id="${id}_v" placeholder="${esc(f.ph||'')}" value="${esc(v.value||'')}"></div>`;break;
+    case 'contact':
+      h=`<div class="row2"><input type="text" id="${id}_n" placeholder="담당 부서 또는 담당자명" value="${esc(v.name||'')}">
+         <input type="email" id="${id}_m" placeholder="name@org.go.kr" value="${esc(v.email||'')}"></div>`;break;
+    case 'personal':
+      h=`<label class="switch"><input type="checkbox" id="${id}_c" ${v.has?'checked':''}> 개인정보를 포함합니다</label>
+         <div class="tagbox" id="${id}_box" style="margin-top:10px">`+(v.cats||[]).map((t,i)=>`<span class="pill">${esc(t)}<b data-rm="${i}">×</b></span>`).join('')
+        +`<input type="text" id="${id}" placeholder="포함 시 유형 입력 — 예: 건강정보, 성별, 연령"></div>`;break;
+    case 'formats':
+      h=`<input type="text" id="${id}" placeholder="${esc(f.ph||'')}" value="${esc(val||'')}">`;break;
+  }
+  return h;
+}
+
+function bind(f,ns,get,put){
+  const id='#'+ns+'_'+f.id, el=s=>document.querySelector(s);
+  const tagAdd=(inputSel,boxSel,read,write)=>{
+    const inp=el(inputSel);
+    inp&&inp.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){e.preventDefault();const t=inp.value.trim();if(!t)return;const arr=[...(read()||[])];if(!arr.includes(t))arr.push(t);write(arr);render();}
+      if(e.key==='Backspace'&&!inp.value){const arr=[...(read()||[])];if(arr.length){arr.pop();write(arr);render();}}
+    });
+    const box=el(boxSel);
+    box&&box.addEventListener('click',e=>{const i=e.target.dataset.rm;if(i===undefined)return;const arr=[...(read()||[])];arr.splice(+i,1);write(arr);render();});
+  };
+  switch(f.kind){
+    case 'text':case 'url':case 'email':case 'textarea':case 'number':case 'select':
+      el(id)&&el(id).addEventListener('input',e=>{put(e.target.value);refresh();});break;
+    case 'tags':
+      tagAdd(id,id+'_box',()=>get()||[],v=>put(v));break;
+    case 'daterange':
+      el(id+'_s')&&el(id+'_s').addEventListener('input',e=>{put({...(get()||{}),start:e.target.value});refresh();});
+      el(id+'_e')&&el(id+'_e').addEventListener('input',e=>{put({...(get()||{}),end:e.target.value});refresh();});break;
+    case 'scheme':
+      el(id+'_sc')&&el(id+'_sc').addEventListener('input',e=>{put({...(get()||{}),scheme:e.target.value});refresh();});
+      el(id+'_v')&&el(id+'_v').addEventListener('input',e=>{put({...(get()||{}),value:e.target.value});refresh();});break;
+    case 'contact':
+      el(id+'_n')&&el(id+'_n').addEventListener('input',e=>{put({...(get()||{}),name:e.target.value});refresh();});
+      el(id+'_m')&&el(id+'_m').addEventListener('input',e=>{put({...(get()||{}),email:e.target.value});refresh();});break;
+    case 'personal':
+      el(id+'_c')&&el(id+'_c').addEventListener('change',e=>{put({...(get()||{}),has:e.target.checked});render();});
+      tagAdd(id,id+'_box',()=>(get()||{}).cats||[],v=>put({...(get()||{}),cats:v}));break;
+    case 'formats':{
+      const inp=el(id);
+      if(inp){
+        inp.addEventListener('input',e=>{put(e.target.value);refresh();});
+        inp.addEventListener('change',()=>syncDistsFromFormats());
+      }
+      break;
+    }
+  }
+}
+
+function fieldHTML(f,val,ns,sub){
+  const L=lvOf(f);
+  const langtag=(f.json==='lang'||f.json==='langlist')?`<span class="badge sel">@${LANG()}</span>`:'';
+  return `<div class="field${sub?' subfield':''}" data-id="${f.id}" data-lv="${L}">
+    <div class="flabel"><span class="name">${f.ko}</span><span class="qn">${f.qn}</span>
+      <span class="badge ${cls(L)}">${L||'해당 없음'}</span>${langtag}</div>
+    <div class="hint">${f.desc}</div>
+    ${ctrl(f,val,()=>{},ns)}
+    <div class="err-msg">필수 항목입니다. 값을 입력하세요.</div>
+  </div>`;
+}
+
+function render(){
+  const area=$('#formArea');
+  $('#secName').textContent = TARGET==='dataset'?'데이터셋':'데이터 배포방식';
+  $('#secDesc').textContent = TARGET==='dataset'
+    ?'dcat:Dataset · 총 '+DATASET.length+'개 항목'
+    :'dcat:Distribution · CSV·XLSX 등 파일 형태 하나당 배포 1건 · 1건당 '+DISTRIBUTION.length+'개 항목';
+
+  if(TABLEVIEW){ area.hidden=true; $('#tableArea').hidden=false; renderTable(); return; }
+  area.hidden=false; $('#tableArea').hidden=true;
+
+  if(TARGET==='dataset'){
+    area.innerHTML=DATASET.map(f=>fieldHTML(f,ds[f.id],'ds')).join('');
+    DATASET.forEach(f=>bind(f,'ds',()=>ds[f.id],v=>ds[f.id]=v));
+  }else{
+    area.innerHTML=dists.map((d,i)=>`
+      <div class="distcard">
+        <div class="disthead"><span class="no">${i+1}</span><b>배포 ${i+1}${d.format?' · '+d.format:''}</b>
+          ${dists.length>1?`<button class="del" data-del="${i}">삭제</button>`:''}</div>
+        ${DISTRIBUTION.map(f=>fieldHTML(f,d[f.id],'d'+i)).join('')}
+      </div>`).join('')
+      +`<div class="addrow"><button class="addbtn" id="addDist">＋ 배포 추가</button></div>`;
+    dists.forEach((d,i)=>DISTRIBUTION.forEach(f=>bind(f,'d'+i,()=>dists[i][f.id],v=>dists[i][f.id]=v)));
+    $('#addDist').addEventListener('click',()=>{dists.push({});distSeq++;render();refresh();});
+    $$('[data-del]').forEach(b=>b.addEventListener('click',()=>{dists.splice(+b.dataset.del,1);render();refresh();}));
+  }
+  applyFilter(); refresh();
+}
+
+function renderTable(){
+  const rows=fieldsOf(TARGET).map(f=>{
+    const v=lvOf(f);
+    const c=`<td class="lv ${v==='필수'?'lv-req':v==='권장'?'lv-rec':v==='선택'?'lv-sel':'lv-non'}">${v||'–'}</td>`;
+    return `<tr><td><b>${f.ko}</b></td><td class="q">${f.qn}</td><td>${f.desc}</td>${c}</tr>`;
+  }).join('');
+  $('#tableArea').innerHTML=`<table class="spec"><thead><tr>
+    <th style="width:130px">항목</th><th style="width:190px">속성명</th><th>설명</th>
+    <th style="width:64px;text-align:center">구분</th>
+  </tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function applyFilter(){
+  $$('#formArea .field.subfield').forEach(el=>el.style.display='');
+  $$('#formArea .field:not(.subfield)').forEach(el=>{
+    el.style.display=(FILTER==='all'||el.dataset.lv===FILTER)?'':'none';
+  });
+}
+
+/* 배포방식 칸에 적은 파일 형식대로 배포 건을 맞춰 준다 (칸을 벗어날 때 한 번) */
+const FMT_ALIAS={'엑셀':'XLSX','EXCEL':'XLSX','한글':'HWPX','HWP':'HWPX','오픈API':'API','OPENAPI':'API','TURTLE':'RDF','TTL':'RDF'};
+function fmtTokens(){
+  const known=new Map((DISTRIBUTION.find(f=>f.id==='format').opts||[])
+    .filter(([o])=>o).map(([o])=>[o.toUpperCase(),o]));
+  const hits=[], misses=[];
+  String(ds.distribution||'').split(/[,;·、\/|]+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
+    const key=s.toUpperCase().replace(/\s+/g,'');
+    const hit=known.get(key)||known.get(FMT_ALIAS[key]||'');
+    if(hit){if(!hits.includes(hit))hits.push(hit);}
+    else if(!misses.includes(s))misses.push(s);
+  });
+  return {hits,misses};
+}
+function unknownFormats(){return fmtTokens().misses;}
+function syncDistsFromFormats(){
+  const {hits}=fmtTokens();
+  hits.forEach(fmt=>{
+    if(dists.some(d=>(d.format||'')===fmt))return;      // 이미 있는 형식은 건드리지 않는다
+    const slot=dists.findIndex(d=>!DISTRIBUTION.some(x=>filled(x,d[x.id])));
+    if(slot>=0)dists[slot].format=fmt; else dists.push({format:fmt});
+  });
+  render();refresh();
+}
+
+/* ===== 값 채움 판정 ===== */
+function filled(f,v){
+  if(f.kind==='formats')return String(v||'').trim()!==''||dists.some(d=>DISTRIBUTION.some(x=>filled(x,d[x.id])));
+  if(v===undefined||v===null||v==='')return false;
+  if(Array.isArray(v))return v.length>0;
+  if(typeof v==='object'){
+    if(f.kind==='daterange')return !!(v.start||v.end);
+    if(f.kind==='scheme')return !!(v.value&&v.value.trim());
+    if(f.kind==='contact')return !!((v.name&&v.name.trim())||(v.email&&v.email.trim()));
+    if(f.kind==='personal')return !!v.has;
+    return Object.values(v).some(x=>x!==''&&x!==undefined);
+  }
+  return String(v).trim()!=='';
+}
+
+function refresh(){
+  const reqDs=DATASET.filter(f=>lvOf(f)==='필수'&&f.kind!=='formats');
+  const reqDist=DISTRIBUTION.filter(f=>lvOf(f)==='필수');
+  let done=reqDs.filter(f=>filled(f,ds[f.id])).length;
+  let total=reqDs.length;
+  // 아직 아무것도 입력하지 않은 빈 배포 칸은 세지 않는다
+  const started=dists.filter(d=>DISTRIBUTION.some(f=>filled(f,d[f.id])));
+  started.forEach(d=>{total+=reqDist.length;done+=reqDist.filter(f=>filled(f,d[f.id])).length;});
+  $('#reqNow').textContent=done; $('#reqAll').textContent=total;
+  $('#progBar').style.width=(total?Math.round(done/total*100):0)+'%';
+  const dsFilled=DATASET.filter(f=>filled(f,ds[f.id])).length;
+  const dsTotal=DATASET.length;
+  $('#kvDs').textContent=dsFilled+' / '+dsTotal;
+  if(!$('#dsPeek').hidden)paintDsPeek();
+  const empty=dists.length-started.length;
+  $('#kvDist').textContent=started.length+'건'+(empty?` (빈 칸 ${empty})`:'');
+  if(!$('#distPeek').hidden)paintDistPeek();
+  const c2=$('#distCount2'); if(c2)c2.textContent=started.length;
+  const fz=$('#distFmts');
+  if(fz){
+    const fs=[...new Set(started.map(d=>(d.format||'').trim()).filter(Boolean))];
+    const unknown=unknownFormats();
+    fz.textContent=(fs.length?'· 파일 형식 '+fs.join(', '):(started.length?'· 파일 형식 미지정':''))
+      +(unknown.length?`  ⚠ 목록에 없는 형식: ${unknown.join(', ')}`:'');
+    fz.style.color=unknown.length?'var(--err)':'';
+  }
+  $$('#formArea .distcard').forEach((c,i)=>{
+    const b=c.querySelector('.disthead b');
+    if(b&&dists[i])b.textContent='배포 '+(i+1)+(dists[i].format?' · '+dists[i].format:'');
+  });
+
+  const cnt=(arr)=>`필수 ${arr.filter(f=>lvOf(f)==='필수').length} · 권장 ${arr.filter(f=>lvOf(f)==='권장').length} · 선택 ${arr.filter(f=>lvOf(f)==='선택').length}`;
+  $('#cnt-dataset').textContent=`${DATASET.length}개 항목 · ${cnt(DATASET)}`;
+  $('#cnt-distribution').textContent=`${DISTRIBUTION.length}개 항목 · ${cnt(DISTRIBUTION)}`;
+  paintPreview();
+}
+
+/* ===== 데이터셋 입력 클릭 → 비어 있는 항목으로 이동 ===== */
+function jumpToField(id){
+  if(TARGET!=='dataset')select('dataset');
+  if(TABLEVIEW){
+    TABLEVIEW=false;
+    const t=$('#btnTable'); t.setAttribute('aria-pressed','false'); t.textContent='속성 표로 보기';
+    render();
+  }
+  if(FILTER!=='all'){FILTER='all';syncChips();applyFilter();}
+  setTimeout(()=>{
+    const el=$(`#formArea > .field[data-id="${id}"]`);
+    if(!el)return;
+    el.classList.add('jump'); setTimeout(()=>el.classList.remove('jump'),1400);
+    el.scrollIntoView&&el.scrollIntoView({behavior:'smooth',block:'center'});
+    const inp=el.querySelector('input,textarea,select');
+    inp&&inp.focus({preventScroll:true});
+  },70);
+}
+function paintDsPeek(){
+  const box=$('#dsPeek');
+  const miss=DATASET.filter(f=>!filled(f,ds[f.id]));
+  if(!miss.length){box.innerHTML='<div class="pkempty">비어 있는 항목이 없습니다.</div>';return;}
+  const req=miss.filter(f=>lvOf(f)==='필수'), rest=miss.filter(f=>lvOf(f)!=='필수');
+  const item=(f,warn)=>`<button type="button" class="pk ${warn?'warn':''}" data-goid="${f.id}">
+      <b>${f.ko} · ${lvOf(f)||'선택'}</b><span>${f.qn} — 눌러서 작성하러 가기</span></button>`;
+  box.innerHTML=
+    (req.length?`<div class="pkhead">필수 ${req.length}개 비었음</div>`+req.map(f=>item(f,true)).join(''):'')
+    +(rest.length?`<div class="pkhead">그 밖에 비어 있는 항목 ${rest.length}개</div>`+rest.map(f=>item(f,false)).join(''):'');
+  $$('#dsPeek .pk').forEach(b=>b.addEventListener('click',()=>jumpToField(b.dataset.goid)));
+}
+$('#kvDs').addEventListener('click',e=>{
+  const box=$('#dsPeek'), open=box.hidden;
+  box.hidden=!open; e.currentTarget.setAttribute('aria-expanded',String(open));
+  if(open)paintDsPeek();
+});
+
+/* ===== 배포 건수 클릭 → 어떤 배포가 들어갔는지 ===== */
+function paintDistPeek(){
+  const box=$('#distPeek');
+  if(!dists.length){box.innerHTML='<div class="pkempty">등록된 배포가 없습니다.</div>';return;}
+  box.innerHTML=dists.map((d,i)=>{
+    const url=(d.accessURL||'').trim(), fmt=(d.format||'').trim(), lic=(d.license||'').trim();
+    const anyVal=DISTRIBUTION.some(f=>filled(f,d[f.id]));
+    return `<button type="button" class="pk ${anyVal&&!url?'warn':''}" data-go="${i}">
+      <b>배포 ${i+1}${fmt?' · '+fmt:''}${lic?' · '+lic:''}${anyVal?'':' · 아직 빈 칸'}</b>
+      <span>${url?url.replace(/&/g,'&amp;').replace(/</g,'&lt;'):(anyVal?'접근 URL이 아직 비어 있습니다':'클릭해서 작성하러 가기')}</span>
+    </button>`;
+  }).join('');
+  $$('#distPeek .pk').forEach(b=>b.addEventListener('click',()=>{
+    const i=+b.dataset.go;
+    if(TABLEVIEW){
+      TABLEVIEW=false;
+      const t=$('#btnTable'); t.setAttribute('aria-pressed','false'); t.textContent='속성 표로 보기';
+    }
+    if(TARGET!=='distribution')select('distribution'); else render();
+    if(FILTER!=='all'){FILTER='all';syncChips();applyFilter();}
+    setTimeout(()=>{
+      const card=$$('#formArea .distcard')[i];
+      if(card){
+        card.scrollIntoView&&card.scrollIntoView({behavior:'smooth',block:'center'});
+        card.style.boxShadow='0 0 0 2px var(--brand)';setTimeout(()=>card.style.boxShadow='',1200);
+        const inp=card.querySelector('input,select,textarea'); inp&&inp.focus({preventScroll:true});
+      }
+    },60);
+  }));
+}
+$('#kvDist').addEventListener('click',e=>{
+  const box=$('#distPeek'), open=box.hidden;
+  box.hidden=!open; e.target.setAttribute('aria-expanded',String(open));
+  if(open)paintDistPeek();
+});
+
+/* 엑셀 모드: 배포 행 클릭 → 목록 */
+function paintXDistPeek(){
+  const box=$('#xDistPeek');
+  if(!XDIST.length){box.innerHTML='<div class="pkempty">배포 양식이 올라오지 않았습니다.</div>';return;}
+  const orphan=new Set(orphanRows().map(r=>r.__row));
+  box.innerHTML=XDIST.map(r=>{
+    const bad=orphan.has(r.__row)||!(r.accessURL||'').trim();
+    return `<button type="button" class="pk ${bad?'warn':''}" data-row="${r.__row}">
+      <b>${r.__row}행${r.format?' · '+r.format:''}${orphan.has(r.__row)?' · 연결 안 됨':''}</b>
+      <span>${(r.accessURL||'접근 URL 없음').replace(/&/g,'&amp;').replace(/</g,'&lt;')}<br>← ${r.__ds||'데이터셋식별자 없음'}</span>
+    </button>`;
+  }).join('');
+  $$('#xDistPeek .pk').forEach(b=>b.addEventListener('click',()=>{
+    XSHEET='distribution'; syncSheetTabs(); ERRONLY=false;
+    $('#xlErrOnly').setAttribute('aria-pressed','false');
+    paintXl(LASTERRS);
+    setTimeout(()=>{
+      const card=$(`#xlPreview [data-row="${b.dataset.row}"]`)||$('#xlPreview');
+      card.scrollIntoView({behavior:'smooth',block:'center'});
+      if(card.classList.contains('rec')){card.style.boxShadow='0 0 0 2px var(--brand)';setTimeout(()=>card.style.boxShadow='',1200);}
+    },80);
+  }));
+}
+$('#xKvDist').addEventListener('click',e=>{
+  const box=$('#xDistPeek'), open=box.hidden;
+  box.hidden=!open; e.currentTarget.setAttribute('aria-expanded',String(open));
+  if(open)paintXDistPeek();
+});
+
+/* 엑셀 모드: 데이터셋 행 클릭 → 비어 있는 필수 항목이 있는 행으로 */
+function jumpToXlRow(sheet,row){
+  XSHEET=sheet; syncSheetTabs(); ERRONLY=false;
+  $('#xlErrOnly').setAttribute('aria-pressed','false');
+  $('#xlErrOnly').textContent=XVIEW==='card'?'오류 행만 보기':'오류 열만 보기';
+  paintXl(LASTERRS);
+  setTimeout(()=>{
+    const card=$(`#xlPreview [data-row="${row}"]`)||$('#xlPreview');
+    card.scrollIntoView({behavior:'smooth',block:'center'});
+    if(card.classList.contains('rec')){card.style.boxShadow='0 0 0 2px var(--brand)';setTimeout(()=>card.style.boxShadow='',1200);}
+  },80);
+}
+function paintXDsPeek(){
+  const box=$('#xDsPeek');
+  if(!XROWS.length){box.innerHTML='<div class="pkempty">데이터셋 양식이 올라오지 않았습니다.</div>';return;}
+  const reqDs=XLDS.filter(f=>lvOf(f)==='필수');
+  box.innerHTML=XROWS.map(r=>{
+    const missing=reqDs.filter(f=>!(r[f.id]||'').trim());
+    return `<button type="button" class="pk ${missing.length?'warn':''}" data-drow="${r.__row}">
+      <b>${r.__row}행 · ${hesc(cut(r.title||'(제목 없음)',34))}${missing.length?' · 필수 '+missing.length+'개 비었음':''}</b>
+      <span>${missing.length?'비어 있음: '+hesc(missing.map(f=>f.ko).join(', ')):hesc(r.identifier||'식별자 없음')}</span>
+    </button>`;
+  }).join('');
+  $$('#xDsPeek .pk').forEach(b=>b.addEventListener('click',()=>jumpToXlRow('dataset',b.dataset.drow)));
+}
+$('#xKvDs').addEventListener('click',e=>{
+  const box=$('#xDsPeek'), open=box.hidden;
+  box.hidden=!open; e.currentTarget.setAttribute('aria-expanded',String(open));
+  if(open)paintXDsPeek();
+});
+
+let PFMT='jsonld', MODE='manual';
+function paintPreview(){
+  const cm=PFMT==='rdf'?'<!-- ':(PFMT==='ttl'?'# ':'// ');
+  const ce=PFMT==='rdf'?' -->':'';
+  const note=$('#fmtNote'), out=$('#preview');
+  let list;
+  if(MODE==='excel'){
+    if(!XROWS.length&&!XDIST.length){
+      note.textContent='· 엑셀 일괄 등록';
+      out.textContent='엑셀 파일을 올리면 여기에서 결과를 미리 볼 수 있습니다.';return;
+    }
+    if(!XROWS.length){
+      note.textContent=`· 엑셀 배포 ${XDIST.length}행`;
+      const {dOut}=splitGraphs(distOnlyObjs());
+      out.textContent=dOut.length
+        ? cm+'파일 · 배포'+ce+'\n'+serializeAs(PFMT,dOut)
+        : '배포 행에서 값을 찾지 못했습니다.';
+      return;
+    }
+    list=XROWS.map(rowToObj);
+    note.textContent=`· 엑셀 ${XROWS.length}건`;
+  }else{
+    list=[build()];
+    note.textContent='· 직접 입력';
+  }
+  const {dsOut,dOut}=splitGraphs(list);
+  let t=cm+'파일 1 · 데이터셋'+ce+'\n'+serializeAs(PFMT,dsOut);
+  if(dOut.length)t+='\n\n'+cm+'파일 2 · 배포'+ce+'\n'+serializeAs(PFMT,dOut);
+  out.textContent=t;
+}
+
+/* ===== JSON-LD ===== */
+function serialize(f,v,L){
+  if(!filled(f,v))return undefined;
+  switch(f.json){
+    case 'lang': return {"@value":String(v).trim(),"@language":L};
+    case 'langlist': return v.map(x=>({"@value":x,"@language":L}));
+    case 'num': return Number(v);
+    case 'uri': return {"@id":(f.base||'')+v};
+    case 'iri': return {"@id":String(v).trim()};
+    case 'period': return {"@type":"dct:PeriodOfTime","dcat:startDate":v.start||null,"dcat:endDate":v.end||null};
+  }
+  if(f.kind==='tags')return v;
+  if(f.kind==='scheme')return {"@type":"adms:Identifier","skos:notation":v.value.trim(),"adms:schemeAgency":v.scheme||'DOI'};
+  if(f.kind==='contact'){const o={"@type":"vcard:Kind"};if(v.name)o["vcard:fn"]=v.name;if(v.email)o["vcard:hasEmail"]={"@id":"mailto:"+v.email};return o;}
+  if(f.kind==='personal'){return true;}
+  if(f.kind==='formats')return undefined;
+  return String(v).trim();
+}
+
+function build(){
+  const L=LANG(), o={"@context":CTX,"@type":"dcat:Dataset"};
+  DATASET.forEach(f=>{
+    if(f.kind==='formats')return;
+    const s=serialize(f,ds[f.id],L);
+    if(s===undefined)return;
+    if(f.id==='custodian'){ (o["dct:publisher"]=[].concat(o["dct:publisher"]||[],[s])); return; }
+    if(f.id==='hasPersonalData'){ o["dpv:hasPersonalData"]=true; const c=(ds[f.id]||{}).cats||[]; if(c.length)o["dpv:hasPersonalDataCategory"]=c; return; }
+    o[f.qn]=s;
+  });
+  const arr=dists.map(d=>{
+    const x={"@type":"dcat:Distribution"};
+    DISTRIBUTION.forEach(f=>{const s=serialize(f,d[f.id],L);if(s!==undefined)x[f.qn]=s;});
+    return Object.keys(x).length>1?x:null;
+  }).filter(Boolean);
+  if(arr.length)o["dcat:distribution"]=arr;
+  return o;
+}
+
+/* ============================================================
+   RDF 직렬화 — 위에서 만든 JSON-LD 구조를 그대로 변환
+   ============================================================ */
+const BASE='https://data.ndi.go.kr/id/dataset/';
+const PREFIXES={...CTX,skos:'http://www.w3.org/2004/02/skos/core#',rdf:'http://www.w3.org/1999/02/22-rdf-syntax-ns#',xsd:'http://www.w3.org/2001/XMLSchema#'};
+const subjOf=o=>{
+  if(o["@id"])return o["@id"];
+  const id=o["dct:identifier"];
+  const s=typeof id==='string'?id.trim():'';
+  return BASE+(s?encodeURIComponent(s):'unnamed-'+Math.abs(JSON.stringify(o).length));
+};
+const isPlainObj=v=>v&&typeof v==='object'&&!Array.isArray(v);
+const tesc=s=>String(s).replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n');
+
+function ttlNode(v,ind){
+  if(v===null||v===undefined)return null;
+  if(typeof v==='number')return String(v);
+  if(typeof v==='boolean')return v?'true':'false';
+  if(typeof v==='string')return `"${tesc(v)}"`;
+  if(Array.isArray(v)){const a=v.map(x=>ttlNode(x,ind)).filter(Boolean);return a.length?a.join(', '):null;}
+  if(isPlainObj(v)){
+    if(v["@id"])return `<${v["@id"]}>`;
+    if(v["@value"]!==undefined)return `"${tesc(v["@value"])}"`+(v["@language"]?`@${v["@language"]}`:'');
+    const pad=' '.repeat(ind+2), lines=[];
+    if(v["@type"])lines.push(`a ${v["@type"]}`);
+    Object.entries(v).forEach(([k,val])=>{
+      if(k.startsWith('@'))return;
+      const n=ttlNode(val,ind+2); if(n!==null)lines.push(`${k} ${n}`);
+    });
+    return lines.length?`[\n${pad}${lines.join(' ;\n'+pad)}\n${' '.repeat(ind)}]`:null;
+  }
+  return `"${tesc(String(v))}"`;
+}
+
+function toTurtle(list){
+  const head=Object.entries(PREFIXES).map(([p,u])=>`@prefix ${p}: <${u}> .`).join('\n')+'\n\n';
+  const body=list.map(o=>{
+    const lines=[`a ${o["@type"]||'dcat:Dataset'}`];
+    Object.entries(o).forEach(([k,v])=>{
+      if(k.startsWith('@'))return;
+      const n=ttlNode(v,2); if(n!==null)lines.push(`${k} ${n}`);
+    });
+    return `<${subjOf(o)}>\n  ${lines.join(' ;\n  ')} .`;
+  }).join('\n\n');
+  return head+body+'\n';
+}
+
+const xesc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function rdfProp(k,v,ind){
+  const pad=' '.repeat(ind), out=[];
+  const one=x=>{
+    if(x===null||x===undefined)return;
+    if(isPlainObj(x)){
+      if(x["@id"]){out.push(`${pad}<${k} rdf:resource="${xesc(x["@id"])}"/>`);return;}
+      if(x["@value"]!==undefined){
+        const lg=x["@language"]?` xml:lang="${x["@language"]}"`:'';
+        out.push(`${pad}<${k}${lg}>${xesc(x["@value"])}</${k}>`);return;
+      }
+      const inner=[];
+      Object.entries(x).forEach(([kk,vv])=>{if(!kk.startsWith('@'))inner.push(rdfProp(kk,vv,ind+4));});
+      out.push(`${pad}<${k}>\n${pad}  <${x["@type"]||'rdf:Description'}>\n${inner.filter(Boolean).join('\n')}\n${pad}  </${x["@type"]||'rdf:Description'}>\n${pad}</${k}>`);
+      return;
+    }
+    if(typeof x==='number'){out.push(`${pad}<${k} rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">${x}</${k}>`);return;}
+    if(typeof x==='boolean'){out.push(`${pad}<${k} rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">${x}</${k}>`);return;}
+    out.push(`${pad}<${k}>${xesc(x)}</${k}>`);
+  };
+  (Array.isArray(v)?v:[v]).forEach(one);
+  return out.join('\n');
+}
+function toRdfXml(list){
+  const ns=Object.entries(PREFIXES).map(([p,u])=>`  xmlns:${p}="${u}"`).join('\n');
+  const body=list.map(o=>{
+    const props=Object.entries(o).filter(([k])=>!k.startsWith('@')).map(([k,v])=>rdfProp(k,v,4)).filter(Boolean).join('\n');
+    return `  <${o["@type"]||'dcat:Dataset'} rdf:about="${xesc(subjOf(o))}">\n${props}\n  </${o["@type"]||'dcat:Dataset'}>`;
+  }).join('\n\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<rdf:RDF\n${ns}>\n${body}\n</rdf:RDF>\n`;
+}
+
+function download(name,text,mime){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:mime}));
+  a.download=name;a.click();URL.revokeObjectURL(a.href);
+}
+/* 데이터셋 그래프와 배포 그래프를 분리 — 배포는 자기 URI를 갖고 데이터셋은 참조만 */
+function splitGraphs(list){
+  const dsOut=[], dOut=[];
+  list.forEach(o=>{
+    const copy={...o}, subj=subjOf(o);
+    const embedded=copy["dcat:distribution"];
+    if(Array.isArray(embedded)&&embedded.length){
+      const uris=embedded.map((_,i)=>subj+'/distribution/'+(i+1));
+      copy["dcat:distribution"]=uris.map(u=>({"@id":u}));
+      embedded.forEach((x,i)=>{
+        const dist={"@id":uris[i],...x}; dist["dct:isPartOf"]={"@id":subj};
+        dOut.push(dist);
+      });
+    }
+    dsOut.push(copy);
+  });
+  return {dsOut,dOut};
+}
+function jsonldText(list){
+  if(list.length===1)return JSON.stringify({"@context":CTX,...strip(list[0])},null,2);
+  return JSON.stringify({"@context":CTX,"@graph":list.map(strip)},null,2);
+}
+function strip(o){const c={...o};delete c["@context"];return c;}
+function serializeAs(fmt,list){
+  return fmt==='ttl'?toTurtle(list):fmt==='rdf'?toRdfXml(list):jsonldText(list);
+}
+const EXT={ttl:'.ttl',rdf:'.rdf',jsonld:'.jsonld'};
+const MIME={ttl:'text/turtle',rdf:'application/rdf+xml',jsonld:'application/ld+json'};
+
+/* 파일명: HealthDCAT-KR_데이터셋이름_데이터셋.rdf / HealthDCAT-KR_데이터셋이름_배포.rdf */
+const safeName=s=>String(s||'').trim().replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_').slice(0,60);
+const stemOf=name=>'HealthDCAT-KR_'+(safeName(name)||'이름없음');
+
+function exportAs(fmt,list,stem,only){
+  const {dsOut,dOut}=splitGraphs(list);
+  let n=0;
+  if(only!=='dist'&&dsOut.length){download(stem+'_데이터셋'+EXT[fmt],serializeAs(fmt,dsOut),MIME[fmt]);n++;}
+  if(only!=='ds'&&dOut.length){download(stem+'_배포'+EXT[fmt],serializeAs(fmt,dOut),MIME[fmt]);n++;}
+  return n;
+}
+const fmtLabel=fmt=>fmt==='ttl'?'Turtle':fmt==='rdf'?'RDF/XML':'JSON-LD';
+
+/* ===== 검증 ===== */
+function validate(){
+  let bad=0, first=null;
+  const markEl=(el,f,v)=>{
+    if(!el)return;
+    const isBad=lvOf(f)==='필수'&&f.kind!=='formats'&&!filled(f,v);
+    let extra=false;
+    if(f.kind==='url'&&v&&!/^https?:\/\/.+/i.test(String(v).trim()))extra=true;
+    if(f.kind==='contact'&&v&&v.email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email))extra=true;
+    el.classList.toggle('invalid',isBad||extra);
+    el.querySelector('.err-msg').textContent = extra?'형식이 올바르지 않습니다.':'필수 항목입니다. 값을 입력하세요.';
+    if(isBad||extra){bad++;first=first||el;}
+  };
+  if(TABLEVIEW){toast('표 보기에서는 검증을 표시하지 않습니다');return;}
+  if(TARGET==='dataset'){
+    DATASET.forEach(f=>markEl($(`#formArea > .field[data-id="${f.id}"]`),f,ds[f.id]));
+  }
+  // 배포 카드는 값이 하나라도 들어간 건만 검사 — 빈 칸은 아직 작성 전으로 본다
+  $$('#formArea .distcard').forEach((card,i)=>{
+    const d=dists[i]||{};
+    if(!DISTRIBUTION.some(f=>filled(f,d[f.id])))return;
+    DISTRIBUTION.forEach(f=>markEl(card.querySelector(`.field[data-id="${f.id}"]`),f,d[f.id]));
+  });
+  if(bad){ FILTER='all'; syncChips(); applyFilter(); first.scrollIntoView&&first.scrollIntoView({behavior:'smooth',block:'center'}); toast(`확인이 필요한 항목 ${bad}개`); }
+  else toast('필수 항목을 모두 채웠습니다');
+}
+
+/* ===== UI ===== */
+function select(t){
+  TARGET=t;
+  $$('.pick').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.target===t)));
+  render();
+}
+function syncChips(){$$('#filters .chip').forEach(c=>c.setAttribute('aria-pressed',String(!c.dataset.soon&&c.dataset.f===FILTER)));}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('on'),2000);}
+
+$$('.pick').forEach(b=>b.addEventListener('click',()=>select(b.dataset.target)));
+$$('#filters .chip').forEach(c=>c.addEventListener('click',()=>{
+  if(c.dataset.soon){toast('선택 항목은 업데이트 예정입니다');return;}
+  FILTER=c.dataset.f;syncChips();applyFilter();
+}));
+$('#btnTable').addEventListener('click',e=>{TABLEVIEW=!TABLEVIEW;e.target.setAttribute('aria-pressed',String(TABLEVIEW));e.target.textContent=TABLEVIEW?'입력 화면으로':'속성 표로 보기';render();});
+$('#btnValidate').addEventListener('click',validate);
+$$('[data-dl]').forEach(b=>b.addEventListener('click',()=>{
+  const fmt=b.dataset.dl;
+  const name=(ds.title||'').trim()||(ds.identifier||'').trim();
+  if(!name){toast('제목을 먼저 입력하면 파일 이름에 들어갑니다');}
+  const n=exportAs(fmt,[build()],stemOf(name));
+  toast(n===2?`${fmtLabel(fmt)} 파일 2개(데이터셋 · 배포)를 내려받았습니다`:`${fmtLabel(fmt)} 데이터셋 파일을 내려받았습니다`);
+}));
+$$('#fmtTabs .chip').forEach(c=>c.addEventListener('click',()=>{
+  PFMT=c.dataset.fmt;$$('#fmtTabs .chip').forEach(x=>x.setAttribute('aria-pressed',String(x===c)));paintPreview();}));
+$('#langSel').addEventListener('change',()=>{render();});
+
+/* ============================================================
+   엑셀 일괄 등록
+   ============================================================ */
+const XL_DS_SHEET='데이터셋', XL_DIST_SHEET='배포';
+const EX={title:'국민건강영양조사 2024',description:'2024년 국민 건강·영양 실태 조사 결과 데이터',theme:'보건의료, 영양',
+ accessRights:'RESTRICTED',identifier:'NDI-2026-000482',admsIdentifier:'10.1234/abcd.2024',
+ applicableLegislation:'보건의료기본법, 개인정보 보호법',healthCategory:'만성질환',hdab:'한국보건의료정보원',
+ contactPoint:'data@example.go.kr',keyword:'건강, 영양조사, 국민건강',publisher:'질병관리청',
+ spatial:'대한민국',temporal:'2024-01-01 ~ 2024-12-31',hasPurpose:'공중보건 연구',
+ populationCoverage:'2024년 국내 거주 만 1세 이상 국민 표본',numberOfUniqueIndividuals:'8000',numberOfRecords:'8000',
+ maxTypicalAge:'80',minTypicalAge:'1',hasPersonalData:'포함',hasLegalBasis:'통계법 제18조',
+ retentionPeriod:'2025-01-01 ~ 2035-12-31',custodian:'국민건강보험공단',hasCodingSystem:'ICD-10, KCD-8',
+ healthTheme:'건강행태',hasCodeValues:'I10, E11.9',qualityAnnotation:'결측률 2% 이하, 내부 검증 완료',
+ accessURL:'https://data.example.go.kr/dataset/123',availability:'available',format:'CSV',license:'공공누리 제1유형'};
+
+const XLDS=DATASET.filter(f=>f.kind!=='formats');           // 배포방식은 별도 시트
+const XLDIST=DISTRIBUTION;
+const colName=f=>f.ko;
+const hdr=f=>`${f.ko} [${lvOf(f)||'선택'}]`;
+
+function needLib(){ if(typeof XLSX==='undefined'){toast('엑셀 기능을 불러오지 못했습니다. 네트워크를 확인하세요');return true;} return false; }
+
+function templateAoA(){
+  const dsAoa=[XLDS.map(hdr),XLDS.map(f=>f.qn),XLDS.map(f=>EX[f.id]||'')];
+  for(let i=0;i<5;i++)dsAoa.push(new Array(XLDS.length).fill(''));
+  const dHead=['데이터셋식별자 [필수]',...XLDIST.map(hdr)];
+  const dAoa=[dHead,['dct:identifier',...XLDIST.map(f=>f.qn)],[EX.identifier,...XLDIST.map(f=>EX[f.id]||'')]];
+  for(let i=0;i<5;i++)dAoa.push(new Array(dHead.length).fill(''));
+  return {dsAoa,dAoa};
+}
+function guideAoA(kind){
+  const fs=kind==='ds'?XLDS:XLDIST;
+  const rows=[['항목','구분','속성명','설명']];
+  if(kind==='dist')rows.push(['데이터셋식별자','필수','dct:identifier','연결할 데이터셋의 식별자']);
+  fs.forEach(f=>rows.push([f.ko,lvOf(f)||'선택',f.qn,f.desc]));
+  return [[kind==='ds'?'HealthDCAT-KR 데이터셋 작성 양식':'HealthDCAT-KR 배포 작성 양식'],
+    ['4행부터 한 행에 하나씩 입력하세요. 여러 값은 쉼표로, 기간은 2024-01-01 ~ 2024-12-31 형식으로 씁니다.'],[],...rows];
+}
+function csvText(aoa){
+  return '\uFEFF'+aoa.map(r=>r.map(c=>{const s=String(c??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(',')).join('\n');
+}
+$$('[data-tpl]').forEach(b=>b.addEventListener('click',()=>{
+  const [kind,fmt]=b.dataset.tpl.split(':');
+  const {dsAoa,dAoa}=templateAoA();
+  const aoa=kind==='ds'?dsAoa:dAoa;
+  const stem=kind==='ds'?'HealthDCAT-KR_데이터셋_양식':'HealthDCAT-KR_배포_양식';
+  if(fmt==='csv'){download(stem+'.csv',csvText(aoa),'text/csv;charset=utf-8');toast('CSV 양식을 내려받았습니다');return;}
+  if(needLib())return;
+  const ws=XLSX.utils.aoa_to_sheet(aoa); ws['!cols']=aoa[0].map(()=>({wch:22})); ws['!freeze']={xSplit:0,ySplit:3};
+  const wg=XLSX.utils.aoa_to_sheet(guideAoA(kind)); wg['!cols']=[{wch:20},{wch:8},{wch:38},{wch:52}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,kind==='ds'?XL_DS_SHEET:XL_DIST_SHEET);
+  XLSX.utils.book_append_sheet(wb,wg,'작성 안내');
+  XLSX.writeFile(wb,stem+'.xlsx');
+  toast((kind==='ds'?'데이터셋':'배포')+' 양식을 내려받았습니다');
+}));
+
+/* ---- 업로드: 데이터셋 / 배포 각각의 슬롯 ---- */
+let XROWS=[], XDIST=[], XSHEET='dataset', XVIEW='card', ERRONLY=false, LASTERRS=null;
+const XFILE={ds:null,dist:null};   // {name, sheet, rows}
+let SLOTHINT='ds';
+
+$$('#excelMode .dropzone[data-slot]').forEach(z=>{
+  z.addEventListener('click',()=>{if(needLib())return;SLOTHINT=z.dataset.slot;$('#xlFile').value='';$('#xlFile').click();});
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag');});
+  z.addEventListener('dragleave',()=>z.classList.remove('drag'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag');SLOTHINT=z.dataset.slot;readFiles(e.dataTransfer.files);});
+});
+$('#xlFile').addEventListener('change',e=>readFiles(e.target.files));
+$$('.fc-x').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();dropSlot(b.dataset.drop);}));
+
+function cellStr(v){
+  if(v===null||v===undefined)return '';
+  if(typeof v==='object'&&typeof v.getFullYear==='function')
+    return v.getFullYear()+'-'+String(v.getMonth()+1).padStart(2,'0')+'-'+String(v.getDate()).padStart(2,'0');
+  return String(v).trim();
+}
+/* 첫 열 머리글로 어떤 양식인지 판별 */
+function detectKind(raw){
+  const h0=cellStr(raw[0]&&raw[0][0]).replace(/\s/g,'');
+  if(h0.startsWith('데이터셋식별자'))return 'dist';
+  return 'ds';
+}
+function rowsFrom(raw,kind){
+  const fields=kind==='ds'?XLDS:XLDIST, extraFirst=(kind==='dist');
+  let start=1;
+  if(String(raw[start]&&raw[start][0]||'').includes(':'))start++;
+  const ex=extraFirst?[EX.identifier,...fields.map(f=>EX[f.id]||'')]:fields.map(f=>EX[f.id]||'');
+  if(raw[start]&&ex.slice(0,3).every((v,i)=>cellStr(raw[start][i])===String(v)))start++;
+  const keys=extraFirst?['__ds',...fields.map(f=>f.id)]:fields.map(f=>f.id);
+  return raw.slice(start)
+    .filter(r=>r.some(c=>cellStr(c)!==''))
+    .map((r,i)=>{const o={__row:start+i+1};keys.forEach((k,j)=>o[k]=cellStr(r[j]));return o;});
+}
+
+function readFiles(fileList){
+  const files=[...(fileList||[])];
+  if(!files.length||needLib())return;
+  let pending=files.length, msgs=[];
+  files.forEach(file=>{
+    const rd=new FileReader();
+    rd.onload=ev=>{
+      try{
+        const wb=XLSX.read(ev.target.result,{type:'array',cellDates:true});
+        let hit=false;
+        wb.SheetNames.forEach(nm=>{
+          if(nm==='작성 안내')return;
+          const raw=XLSX.utils.sheet_to_json(wb.Sheets[nm],{header:1,defval:'',blankrows:false});
+          if(!raw.length)return;
+          // 시트 이름 → 머리글 → 마지막으로 사용자가 누른 슬롯
+          let kind = nm===XL_DS_SHEET?'ds' : nm===XL_DIST_SHEET?'dist' : detectKind(raw);
+          const rows=rowsFrom(raw,kind);
+          if(!rows.length)return;
+          hit=true;
+          if(kind==='ds')XROWS=rows; else XDIST=rows;
+          XFILE[kind]={name:file.name,sheet:wb.SheetNames.length>2?nm:'',rows:rows.length};
+          if(kind!==SLOTHINT)msgs.push(`${file.name}은 ${kind==='ds'?'데이터셋':'배포'} 양식으로 인식했습니다`);
+        });
+        if(!hit)msgs.push(file.name+' 에서 데이터 행을 찾지 못했습니다');
+      }catch(err){msgs.push(file.name+' 을 읽지 못했습니다');}
+      if(--pending===0)afterUpload(msgs);
+    };
+    rd.onerror=()=>{msgs.push(file.name+' 을 읽지 못했습니다');if(--pending===0)afterUpload(msgs);};
+    rd.readAsArrayBuffer(file);
+  });
+}
+
+function paintSlots(){
+  [['ds','#fileDs','데이터셋'],['dist','#fileDist','배포']].forEach(([k,sel,label])=>{
+    const chip=$(sel), zone=$(`#excelMode .dropzone[data-slot="${k}"]`), f=XFILE[k];
+    chip.hidden=!f; zone.classList.toggle('filled',!!f);
+    zone.querySelector('.dz-main').textContent=f?(label+' 파일 교체'):(label+' 파일');
+    if(f){
+      chip.querySelector('b').textContent=f.name;
+      chip.querySelector('.fc-body>span').textContent=(f.sheet?f.sheet+' 시트 · ':'')+f.rows+'행';
+    }
+  });
+}
+function dropSlot(k){
+  XFILE[k]=null;
+  if(k==='ds')XROWS=[]; else XDIST=[];
+  LASTERRS=null; ERRONLY=false;
+  $('#xlErrOnly').hidden=true;
+  $('#xlErrors').innerHTML='';
+  $('#xlFile').value='';                 // 같은 파일을 다시 올릴 수 있게
+  $('#xDsPeek').hidden=true; $('#xKvDs').setAttribute('aria-expanded','false');
+  $('#xDistPeek').hidden=true; $('#xKvDist').setAttribute('aria-expanded','false');
+  paintSlots();
+  if(!XROWS.length&&!XDIST.length){ $('#xlStep3').hidden=true; refreshXl(); toast('올린 파일을 뺐습니다'); return; }
+  XSHEET=XROWS.length?'dataset':'distribution'; syncSheetTabs();
+  paintXl(); refreshXl();
+  toast((k==='ds'?'데이터셋':'배포')+' 파일을 뺐습니다');
+}
+
+function afterUpload(msgs){
+  paintSlots();
+  if(!XROWS.length&&!XDIST.length){toast((msgs&&msgs[0])||'데이터 행을 찾지 못했습니다');return;}
+  $('#xlStep3').hidden=false;
+  $('#xlErrors').innerHTML='';
+  LASTERRS=null; ERRONLY=false;
+  $('#xlErrOnly').hidden=true; $('#xlErrOnly').setAttribute('aria-pressed','false');
+  XSHEET=XROWS.length?'dataset':'distribution'; syncSheetTabs();
+  paintXl(); refreshXl();
+  if(msgs&&msgs.length)toast(msgs[0]);
+  $('#xlStep3').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ---- 셀 검사 ---- */
+function cellError(f,val){
+  const v=(val||'').trim();
+  if(lvOf(f)==='필수'&&!v)return '필수값 누락';
+  if(!v)return '';
+  if(f.kind==='url'&&!/^https?:\/\/.+/i.test(v))return 'http(s):// 로 시작해야 함';
+  if(f.kind==='number'&&!/^\d+(\.\d+)?$/.test(v))return '숫자만 입력';
+  if(f.kind==='select'&&f.opts&&!f.opts.some(([o,l])=>o&&(o===v||l===v||l.startsWith(v))))return '허용값: '+f.opts.filter(o=>o[0]).map(o=>o[0]).join(' / ');
+  if(f.kind==='daterange'&&!/^\d{4}-\d{2}-\d{2}(\s*~\s*\d{4}-\d{2}-\d{2})?$/.test(v))return 'YYYY-MM-DD ~ YYYY-MM-DD 형식';
+  if(f.id==='contactPoint'&&v.includes('@')&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v))return '이메일 형식 확인';
+  if(f.id==='minTypicalAge'||f.id==='maxTypicalAge'){if(+v<0||+v>150)return '0~150 범위';}
+  return '';
+}
+function orphanRows(){
+  return XDIST.filter(r=>!r.__ds||(XROWS.length&&!XROWS.some(d=>d.identifier===r.__ds)));
+}
+function scanErrors(){
+  const errs=[];
+  XROWS.forEach((r,i)=>XLDS.forEach(f=>{const e=cellError(f,r[f.id]);if(e)errs.push({kind:'ds',row:r.__row,n:i+1,col:f.ko,msg:e});}));
+  XDIST.forEach((r,i)=>{
+    if(!r.__ds)errs.push({kind:'dist',row:r.__row,n:i+1,col:'데이터셋식별자',msg:'필수값 누락'});
+    else if(XROWS.length&&!XROWS.some(d=>d.identifier===r.__ds))errs.push({kind:'dist',row:r.__row,n:i+1,col:'데이터셋식별자',msg:'데이터셋 양식에 없는 식별자'});
+    XLDIST.forEach(f=>{const e=cellError(f,r[f.id]);if(e)errs.push({kind:'dist',row:r.__row,n:i+1,col:f.ko,msg:e});});
+  });
+  return errs;
+}
+
+function paintXl(errs){
+  const isDs=XSHEET==='dataset';
+  const rows=isDs?XROWS:XDIST;
+  const mine=(errs||[]).filter(e=>e.kind===(isDs?'ds':'dist'));
+  const cols=[]; if(!isDs)cols.push({key:'__ds',label:'데이터셋식별자',lv:'필수'});
+  (isDs?XLDS:XLDIST).forEach(f=>cols.push({key:f.id,label:f.ko,lv:lvOf(f)||'선택',qn:f.qn}));
+
+  if(!rows.length){
+    $('#xlPreview').innerHTML=`<div class="empty">${isDs?'데이터셋':'배포'} 양식이 아직 올라오지 않았습니다.</div>`;
+  }else if(XVIEW==='card'){
+    $('#xlPreview').innerHTML=cardHTML(rows,cols,mine,isDs,errs);
+    bindCards();
+  }else{
+    $('#xlPreview').innerHTML=tableHTML(rows,cols,mine);
+  }
+  const chips=[`<span class="xchip neutral">데이터셋 ${XROWS.length}행</span>`,`<span class="xchip neutral">배포 ${XDIST.length}행</span>`];
+  if(errs) chips.push(errs.length?`<span class="xchip bad">오류 ${errs.length}건 · ${new Set(errs.map(e=>e.col)).size}개 항목</span>`:`<span class="xchip ok">검증 통과</span>`);
+  else chips.push('<span class="xchip neutral">검증 대기</span>');
+  $('#xlChips').innerHTML=chips.join('');
+}
+
+const cut=(v,n)=>{v=v||'';return v.length>n?v.slice(0,n)+'…':v;};
+const hesc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+/* 행 하나 = 카드 하나. 오류가 있으면 그 항목만 위에 모아 보여준다 */
+function cardHTML(rows,cols,mine,isDs,errs){
+  const byRow={}; mine.forEach(e=>(byRow[e.row]=byRow[e.row]||[]).push(e));
+  const list=(ERRONLY&&mine.length)?rows.filter(r=>byRow[r.__row]):rows;
+  if(!list.length)return `<div class="empty">이 양식에는 오류가 없습니다.</div>`;
+  const html=list.map(r=>{
+    const es=byRow[r.__row]||[];
+    const stat = !errs?`<span class="rstat wait">검증 대기</span>`
+      : es.length?`<span class="rstat bad">오류 ${es.length}건</span>`:`<span class="rstat ok">통과</span>`;
+    const title = isDs ? (r.title||'(제목 없음)') : (r.accessURL||'(접근 URL 없음)');
+    const meta = isDs
+      ? [['식별자',r.identifier],['발행기관',r.publisher],['기간',r.temporal],['배포',(XDIST.filter(d=>d.__ds&&d.__ds===r.identifier).length||0)+'건']]
+      : [['연결 데이터셋',r.__ds],['형식',r.format],['가용성',r.availability],['라이선스',r.license]];
+    const errchips = es.length?`<div class="recerr">`+es.map(e=>`<span class="ecol">${hesc(e.col)} <span>${hesc(e.msg)}</span></span>`).join('')+`</div>`:'';
+    const dl = cols.map(c=>{
+      const v=r[c.key]||'', bad=es.some(e=>e.col===c.label);
+      return `<dt class="${c.lv==='필수'?'reqk':''}">${hesc(c.label)}</dt>`
+        +`<dd class="${bad&&!v?'miss':(v?'':'blank')}">${v?hesc(cut(v,300)):(bad?'필수값이 비어 있습니다':'–')}</dd>`;
+    }).join('');
+    const subs = isDs?XDIST.filter(d=>d.__ds&&d.__ds===r.identifier):[];
+    const subHtml = subs.length?`<div class="subdist"><div class="sd-h">연결된 배포 ${subs.length}건</div>`
+      +subs.map(d=>`<div>${d.__row}행 · <code>${hesc(cut(d.accessURL||'(URL 없음)',60))}</code> · ${hesc(d.format||'형식 없음')}</div>`).join('')+`</div>`:'';
+    return `<div class="rec ${es.length?'bad':''}" data-row="${r.__row}">
+      <div class="rechead"><span class="rno">${r.__row}행</span><span class="rtitle">${hesc(cut(title,70))}</span>${stat}</div>
+      <div class="recmeta">${meta.filter(m=>m[1]).map(m=>`${m[0]} <b>${hesc(cut(m[1],40))}</b>`).join('')||'입력값 없음'}</div>
+      ${errchips}
+      <button class="recmore" type="button">전체 항목 보기 ▾</button>
+      <div class="recbody" hidden><dl class="dl">${dl}</dl>${subHtml}</div>
+    </div>`;
+  }).join('');
+  const note=(ERRONLY&&mine.length)?`<div class="hint" style="margin-bottom:8px">오류가 있는 ${list.length}개 행만 보고 있습니다.</div>`:'';
+  return note+`<div class="reclist">${html}</div>`;
+}
+function bindCards(){
+  $$('#xlPreview .recmore').forEach(b=>b.addEventListener('click',()=>{
+    const body=b.nextElementSibling;
+    body.hidden=!body.hidden;
+    b.textContent=body.hidden?'전체 항목 보기 ▾':'접기 ▴';
+  }));
+  $$('#xlPreview .rechead').forEach(h=>h.addEventListener('click',()=>{
+    const b=h.parentElement.querySelector('.recmore'); b&&b.click();
+  }));
+}
+
+/* 표 보기 — 오류 열만 보기가 켜져 있으면 해당 열/행만 */
+function tableHTML(rows,cols,mine){
+  const eKey=new Set(mine.map(e=>e.row+'|'+e.col));
+  const badCols=new Set(mine.map(e=>e.col)), badRows=new Set(mine.map(e=>e.row));
+  const useOnly=ERRONLY&&mine.length>0;
+  const shown=useOnly?cols.filter(c=>badCols.has(c.label)):cols;
+  const shownRows=useOnly?rows.filter(r=>badRows.has(r.__row)):rows;
+  if(useOnly&&!shown.length)return `<div class="empty">이 양식에는 오류가 없습니다.</div>`;
+  const head=`<tr><th>행</th>`+shown.map(c=>`<th class="${c.lv==='필수'?'req':''}">${hesc(c.label)} [${c.lv}]</th>`).join('')+`</tr>`;
+  const body=shownRows.map(r=>`<tr><td class="rowno">${r.__row}</td>`+shown.map(c=>{
+      const bad=eKey.has(r.__row+'|'+c.label), v=r[c.key]||'';
+      const msg=bad?(mine.find(e=>e.row===r.__row&&e.col===c.label)||{}).msg:'';
+      return `<td class="${bad?'cellbad':'cellok'}" title="${hesc(c.label)}${bad?' — '+hesc(msg):''}">${bad&&!v?'(비어 있음)':(hesc(cut(v,60))||'<span style="color:#c6ccd2">–</span>')}</td>`;
+    }).join('')+`</tr>`).join('');
+  return `<div class="tblwrap"><table class="prev"><thead>${head}</thead><tbody>${body}</tbody></table></div>`
+    +(useOnly?`<div class="hint" style="margin-top:8px">오류가 있는 ${shown.length}개 열 · ${shownRows.length}개 행만 표시하고 있습니다.</div>`:'');
+}
+
+function syncSheetTabs(){
+  $$('#xlSheetTabs .chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.sheet===XSHEET)));
+}
+$$('#xlSheetTabs .chip').forEach(c=>c.addEventListener('click',()=>{XSHEET=c.dataset.sheet;syncSheetTabs();paintXl(LASTERRS);}));
+$$('#xlViewTabs .chip').forEach(c=>c.addEventListener('click',()=>{
+  XVIEW=c.dataset.view;
+  $$('#xlViewTabs .chip').forEach(x=>x.setAttribute('aria-pressed',String(x===c)));
+  $('#xlErrOnly').textContent=ERRONLY?(XVIEW==='card'?'전체 행 보기':'전체 열 보기'):(XVIEW==='card'?'오류 행만 보기':'오류 열만 보기');
+  paintXl(LASTERRS);
+}));
+$('#xlErrOnly').addEventListener('click',e=>{
+  ERRONLY=!ERRONLY;e.target.setAttribute('aria-pressed',String(ERRONLY));
+  e.target.textContent=ERRONLY?(XVIEW==='card'?'전체 행 보기':'전체 열 보기'):(XVIEW==='card'?'오류 행만 보기':'오류 열만 보기');
+  paintXl(LASTERRS);
+});
+
+/* ---- 엑셀 작성 현황 ---- */
+function refreshXl(){
+  const reqDs=XLDS.filter(f=>lvOf(f)==='필수'), reqD=XLDIST.filter(f=>lvOf(f)==='필수');
+  let need=0,have=0;
+  XROWS.forEach(r=>reqDs.forEach(f=>{need++;if((r[f.id]||'').trim())have++;}));
+  XDIST.forEach(r=>{need++;if((r.__ds||'').trim())have++;reqD.forEach(f=>{need++;if((r[f.id]||'').trim())have++;});});
+  $('#xReqNow').textContent=have; $('#xReqAll').textContent=need;
+  $('#xProgBar').style.width=(need?Math.round(have/need*100):0)+'%';
+  $('#xKvDs').textContent=XROWS.length+'행';
+  $('#xKvDist').textContent=XDIST.length+'행';
+  if(!$('#xDsPeek').hidden)paintXDsPeek();
+  if(!$('#xDistPeek').hidden)paintXDistPeek();
+  $('#xKvOrphan').textContent=orphanRows().length+'행';
+  const el=$('#xKvErr');
+  el.textContent = LASTERRS===null?'검증 대기':(LASTERRS.length?LASTERRS.length+'건':'통과');
+  el.style.color = LASTERRS===null?'':(LASTERRS.length?'var(--err)':'var(--ok)');
+  if(MODE==='excel')paintPreview();
+}
+
+
+$('#xlValidate').addEventListener('click',()=>{
+  if(!XROWS.length&&!XDIST.length){toast('먼저 파일을 올려주세요');return;}
+  LASTERRS=scanErrors();
+  ERRONLY=LASTERRS.length>0;
+  $('#xlErrOnly').hidden=!LASTERRS.length;
+  $('#xlErrOnly').setAttribute('aria-pressed',String(ERRONLY));
+  $('#xlErrOnly').textContent=ERRONLY?(XVIEW==='card'?'전체 행 보기':'전체 열 보기'):(XVIEW==='card'?'오류 행만 보기':'오류 열만 보기');
+  // 오류가 있는 양식으로 자동 이동
+  if(LASTERRS.length){
+    const k=LASTERRS[0].kind==='ds'?'dataset':'distribution';
+    XSHEET=k;syncSheetTabs();
+  }
+  paintXl(LASTERRS); refreshXl();
+  const byCol={};
+  LASTERRS.forEach(e=>{const k=(e.kind==='ds'?'데이터셋':'배포')+' · '+e.col+' — '+e.msg;(byCol[k]=byCol[k]||[]).push(e.row);});
+  $('#xlErrors').innerHTML=LASTERRS.length
+    ? `<div class="errlist">`+Object.entries(byCol).slice(0,40).map(([k,rows])=>
+        `<div><b>${k}</b> · ${rows.length}건 (${rows.slice(0,12).join(', ')}행${rows.length>12?' 외':''})</div>`).join('')
+      +(Object.keys(byCol).length>40?`<div>… 외 ${Object.keys(byCol).length-40}종</div>`:'')+`</div>`
+    : `<div class="errlist" style="border-color:var(--ok);background:#e6f7ef;color:#00875a">모든 행이 필수 항목과 형식 검사를 통과했습니다.</div>`;
+  toast(LASTERRS.length?`오류 ${LASTERRS.length}건을 찾았습니다`:'검증을 통과했습니다');
+});
+
+/* 배포 양식만 올라온 경우 — 데이터셋식별자별로 묶은 임시 그래프 */
+function distOnlyObjs(){
+  const groups={};
+  XDIST.forEach(r=>{const k=(r.__ds||'').trim()||'연결안된배포';(groups[k]=groups[k]||[]).push(r);});
+  return Object.entries(groups).map(([k,rows])=>{
+    const list=rows.map(distObj).filter(Boolean);
+    return list.length?{"@context":CTX,"@type":"dcat:Dataset","dct:identifier":k,"dcat:distribution":list}:null;
+  }).filter(Boolean);
+}
+
+/* ---- 엑셀 행 → JSON-LD ---- */
+function distObj(d){
+  const L=LANG(), x={"@type":"dcat:Distribution"};
+  XLDIST.forEach(f=>{const v=(d[f.id]||'').trim();if(!v)return;
+    if(f.json==='lang')x[f.qn]={"@value":v,"@language":L};
+    else if(f.json==='iri')x[f.qn]={"@id":v};
+    else x[f.qn]=v;});
+  return Object.keys(x).length>1?x:null;
+}
+function rowToObj(r){
+  const L=LANG(), o={"@context":CTX,"@type":"dcat:Dataset"};
+  const splitList=v=>v.split(/[,;]/).map(s=>s.trim()).filter(Boolean);
+  XLDS.forEach(f=>{
+    const v=(r[f.id]||'').trim(); if(!v)return;
+    if(f.id==='custodian'){o["dct:publisher"]=[].concat(o["dct:publisher"]||[],[v]);return;}
+    if(f.id==='hasPersonalData'){const yes=/포함|true|y|예/i.test(v)&&!/미포함/.test(v);o["dpv:hasPersonalData"]=yes;return;}
+    switch(f.json){
+      case 'lang':o[f.qn]={"@value":v,"@language":L};break;
+      case 'langlist':o[f.qn]=splitList(v).map(x=>({"@value":x,"@language":L}));break;
+      case 'num':o[f.qn]=Number(v);break;
+      case 'uri':o[f.qn]={"@id":(f.base||'')+v};break;
+      case 'iri':o[f.qn]={"@id":v};break;
+      case 'period':{const [s,e]=v.split('~').map(x=>x.trim());o[f.qn]={"@type":"dct:PeriodOfTime","dcat:startDate":s||null,"dcat:endDate":e||null};break;}
+      default:
+        if(f.kind==='tags')o[f.qn]=splitList(v);
+        else if(f.kind==='scheme')o[f.qn]={"@type":"adms:Identifier","skos:notation":v,"adms:schemeAgency":/^10\./.test(v)?'DOI':'OTHER'};
+        else if(f.id==='contactPoint')o[f.qn]=v.includes('@')?{"@type":"vcard:Kind","vcard:hasEmail":{"@id":"mailto:"+v}}:{"@type":"vcard:Kind","vcard:fn":v};
+        else o[f.qn]=v;
+    }
+  });
+  const dlist=XDIST.filter(d=>d.__ds&&d.__ds===r.identifier).map(distObj).filter(Boolean);
+  if(dlist.length)o["dcat:distribution"]=dlist;
+  return o;
+}
+$$('[data-xdl]').forEach(b=>b.addEventListener('click',()=>{
+  const fmt=b.dataset.xdl;
+  if(!XROWS.length&&!XDIST.length){toast('먼저 파일을 올려주세요');return;}
+
+  /* 배포 양식만 올린 경우 — 데이터셋식별자별로 배포 파일만 내려받는다 */
+  if(!XROWS.length){
+    const objs=distOnlyObjs();
+    if(!objs.length){toast('배포 행에서 값을 찾지 못했습니다');return;}
+    if(objs.length>10&&!confirm(`데이터셋식별자 ${objs.length}개로 나눠 내려받습니다. 계속할까요?`))return;
+    objs.forEach((o,i)=>setTimeout(()=>{
+      exportAs(fmt,[o],stemOf(o["dct:identifier"]),'dist');
+    },i*250));
+    setTimeout(()=>toast(`${fmtLabel(fmt)} · 배포 ${XDIST.length}행을 파일 ${objs.length}개로 내려받았습니다`),objs.length*250);
+    return;
+  }
+
+  if(XROWS.length>10&&!confirm(`데이터셋 ${XROWS.length}건을 각각 따로 내려받습니다. 파일이 최대 ${XROWS.length*2}개 생깁니다. 계속할까요?`))return;
+  XROWS.forEach((r,i)=>{
+    const name=(r.title||'').trim()||(r.identifier||'').trim()||(r.__row+'행');
+    setTimeout(()=>{exportAs(fmt,[rowToObj(r)],stemOf(name));},i*250);
+  });
+  setTimeout(()=>toast(`${fmtLabel(fmt)} · 데이터셋 ${XROWS.length}건을 이름별로 내려받았습니다`),XROWS.length*250);
+}));
+
+/* ---- 모드 전환 ---- */
+$$('.modetab').forEach(b=>b.addEventListener('click',()=>{
+  const m=b.dataset.mode;
+  MODE=m;
+  $$('.modetab').forEach(x=>x.setAttribute('aria-selected',String(x===b)));
+  $('#manualMode').hidden=(m!=='manual');
+  $('#excelMode').hidden=(m!=='excel');
+  $('#statManual').hidden=(m!=='manual');
+  $('#statExcel').hidden=(m!=='excel');
+  $('#statTitle').textContent=(m==='excel')?'엑셀 작성 현황':'작성 현황';
+  if(m==='excel')refreshXl();
+  paintPreview();
+}));
+
+select('dataset');
+</script>
+</body>
+</html>
