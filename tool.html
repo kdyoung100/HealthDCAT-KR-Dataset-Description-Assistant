@@ -476,9 +476,6 @@ const DATASET=[
  {id:'identifier',ko:'식별자',qn:'dct:identifier',desc:'플랫폼에서 관리하는 데이터셋의 중복되지 않는 고유 식별자 기입',lv:['선택','필수','필수'],kind:'text',ph:'예: NDI-2026-000482'},
  {id:'admsIdentifier',ko:'보조식별자',qn:'adms:identifier',desc:'MAST/ADS, DataCite, DOI, EZID 또는 W3ID와 같은 데이터셋의 보조 식별자 기입',lv:['선택','필수','필수'],kind:'scheme',ph:'예: 10.1234/abcd.2024',
   opts:[['DOI','DOI'],['DATACITE','DataCite'],['MAST/ADS','MAST/ADS'],['EZID','EZID'],['W3ID','W3ID']]},
- {id:'applicableLegislation',ko:'적용 가능한 법률',qn:'dcatap:applicableLegislation',desc:'데이터에 적용되는 법률·규정 또는 준수해야 하는 법적 근거',lv:['','','필수'],kind:'tags',ph:'예: 보건의료기본법, 개인정보 보호법'},
- {id:'healthCategory',ko:'건강 분야',qn:'healthdcatap:healthCategory',desc:'데이터가 속하는 보건의료 분야 또는 질병 카테고리',lv:['','','필수'],kind:'tags',ph:'예: 순환기질환, 감염병'},
- {id:'hdab',ko:'건강 데이터 접근 기관',qn:'healthdcatap:hdab',desc:'데이터 접근 승인 및 이용 절차를 관리하는 기관',lv:['','','필수'],kind:'text',ph:'예: 한국보건의료정보원'},
  {id:'contactPoint',ko:'담당자 연락처',qn:'dcat:contactPoint',desc:'데이터셋 담당자에 대한 연락처 정보를 기입',lv:['권장','권장','권장'],kind:'contact'},
  {id:'keyword',ko:'키워드',qn:'dcat:keyword',desc:'상품을 설명할 수 있는 대표 키워드 기입',lv:['권장','권장','권장'],kind:'tags',ph:'엔터로 추가',json:'langlist'},
  {id:'publisher',ko:'데이터 발행기관',qn:'dct:publisher',desc:'데이터를 게재하여 제공하는 기관(플랫폼 사업자번호)의 정보 기입',lv:['권장','권장','권장'],kind:'text',ph:'예: 질병관리청'},
@@ -1124,7 +1121,6 @@ $('#langSel').addEventListener('change',()=>{render();});
 const XL_DS_SHEET='데이터셋', XL_DIST_SHEET='배포';
 const EX={title:'국민건강영양조사 2024',description:'2024년 국민 건강·영양 실태 조사 결과 데이터',theme:'보건의료, 영양',
  accessRights:'RESTRICTED',identifier:'NDI-2026-000482',admsIdentifier:'10.1234/abcd.2024',
- applicableLegislation:'보건의료기본법, 개인정보 보호법',healthCategory:'만성질환',hdab:'한국보건의료정보원',
  contactPoint:'data@example.go.kr',keyword:'건강, 영양조사, 국민건강',publisher:'질병관리청',
  spatial:'대한민국',temporal:'2024-01-01 ~ 2024-12-31',hasPurpose:'공중보건 연구',
  populationCoverage:'2024년 국내 거주 만 1세 이상 국민 표본',numberOfUniqueIndividuals:'8000',numberOfRecords:'8000',
