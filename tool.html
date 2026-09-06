@@ -54,6 +54,8 @@
   .chip.soon:hover{border-color:var(--line-strong)}
   .chip.soon .soontag{font-weight:800;font-size:10px;margin-left:5px;color:#aab2bb}
   .spacer{margin-left:auto}
+  .acts{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;min-width:0}
+  .dlgroup{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
   .tbtn{border:none;border-radius:10px;padding:9px 14px;font-size:12.5px;font-weight:700;cursor:pointer;background:#eef0f3;color:var(--ink)}
   .tbtn:hover{background:#e4e7ec}
   .tbtn.primary{background:var(--brand);color:#fff}
@@ -157,6 +159,19 @@
   @media(max-width:1060px){
     .side{position:static}
   }
+  /* 툴바가 두 줄로 갈라지기 직전 구간 — 여백만 줄여 한 줄을 지킨다 */
+  @media(max-width:1040px){
+    .toolbar{gap:8px;padding:12px 14px}
+    .toolbar .acts{gap:8px}
+    .toolbar .dlgroup{gap:8px}
+    .toolbar .tbtn{padding:9px 11px}
+    .toolbar .chip{padding:6px 10px}
+  }
+  @media(max-width:880px){
+    .toolbar .tbtn{padding:9px 9px;font-size:12px}
+    .toolbar .chip{padding:6px 9px;font-size:12px}
+    .toolbar .chip.soon .soontag{display:none}
+  }
   @media(max-width:720px){
     header.top{padding:14px 16px}
     header.top h1{font-size:15.5px}
@@ -166,6 +181,10 @@
     .toolbar{padding:10px 12px;gap:8px}
     .toolbar .spacer{display:none}
     .toolbar .chips{width:100%}
+    .toolbar .acts{width:100%;margin-left:0;gap:8px}
+    .toolbar .dlgroup{flex:1 1 100%;gap:8px}
+    .toolbar .dlgroup .tbtn{flex:1 1 0}
+    .toolbar .chip.soon .soontag{display:inline}
     .tbtn{flex:1 1 auto;padding:10px 12px}
     .fmtrow .tbtn{flex:1 1 45%}
     .chip{padding:6px 11px}
@@ -334,14 +353,17 @@
         <button class="chip" data-f="권장" aria-pressed="false">권장</button>
         <button class="chip soon" data-f="선택" data-soon="1" aria-disabled="true" aria-pressed="false" title="선택 항목은 업데이트 예정입니다">선택<span class="soontag">업데이트 예정</span></button>
       </div>
-      <span class="spacer"></span>
-      <button class="tbtn" id="btnClear" title="지금 보고 있는 화면의 입력을 비웁니다">비우기</button>
-      <button class="tbtn" id="btnUndo" hidden>되돌리기</button>
-      <button class="tbtn" id="btnTable" aria-pressed="false">속성 표로 보기</button>
-      <button class="tbtn" id="btnValidate">필수값 검증</button>
-      <button class="tbtn primary" data-dl="jsonld" title="HealthDCAT-KR_데이터셋이름.jsonld — 배포까지 한 파일">JSON-LD</button>
-      <button class="tbtn primary" data-dl="ttl" title="HealthDCAT-KR_데이터셋이름.ttl — 배포까지 한 파일">Turtle</button>
-      <button class="tbtn primary" data-dl="rdf" title="HealthDCAT-KR_데이터셋이름.rdf — 배포까지 한 파일">RDF/XML</button>
+      <div class="acts">
+        <button class="tbtn" id="btnClear" title="지금 보고 있는 화면의 입력을 비웁니다">비우기</button>
+        <button class="tbtn" id="btnUndo" hidden>되돌리기</button>
+        <button class="tbtn" id="btnTable" aria-pressed="false">속성 표로 보기</button>
+        <button class="tbtn" id="btnValidate">필수값 검증</button>
+        <div class="dlgroup">
+          <button class="tbtn primary" data-dl="jsonld" title="HealthDCAT-KR_데이터셋이름.jsonld — 배포까지 한 파일">JSON-LD</button>
+          <button class="tbtn primary" data-dl="ttl" title="HealthDCAT-KR_데이터셋이름.ttl — 배포까지 한 파일">Turtle</button>
+          <button class="tbtn primary" data-dl="rdf" title="HealthDCAT-KR_데이터셋이름.rdf — 배포까지 한 파일">RDF/XML</button>
+        </div>
+      </div>
     </div>
 
     <div class="panelbox">
