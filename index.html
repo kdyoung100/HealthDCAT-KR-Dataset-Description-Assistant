@@ -4,14 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>메타데이터 생성 안내 · HealthDCAT-KR</title>
-<meta name="description" content="HealthDCAT-KR 메타데이터 생성 도구 사용 안내. 직접 입력과 엑셀 일괄 등록으로 데이터세트·배포 형식을 작성해 JSON-LD·Turtle·RDF/XML로 내보냅니다.">
+<meta name="description" content="HealthDCAT-KR 메타데이터 생성 도구 사용 안내. 직접 입력과 엑셀 일괄 등록으로 데이터셋·배포 항목을 작성해 JSON-LD·Turtle·RDF/XML로 내보냅니다.">
 <style>
   :root{
     --bg:#f7f8fa; --panel:#fff; --ink:#191f28; --muted:#8b95a1;
     --line:#eef0f3; --line-strong:#dce0e6;
     --brand:#3182f6; --brand2:#2272eb; --brand-soft:#eaf2ff;
     --req:#ff8a3d; --req-soft:#fff3ea;
-    --ok:#00b894; --err:#e5484d;
+    --sel:#8b95a1; --sel-soft:#f1f3f5;
+    --ok:#00b894; --err:#f04452;
     --deep:#0f172a;
     --r:14px;
     --font:-apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo","Segoe UI","Malgun Gothic",sans-serif;
@@ -62,8 +63,9 @@
   @media(max-width:720px){.cards{grid-template-columns:1fr}}
   .card h3{margin:0 0 8px;font-size:15px}
   .card p{margin:0;font-size:13.5px;color:#4b5563;line-height:1.7}
+  .card p+p{margin-top:7px}
 
-  /* 결과물 두 파일 */
+  /* 결과물 */
   .outrow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media(max-width:620px){.outrow{grid-template-columns:1fr}}
   .outcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
@@ -95,20 +97,29 @@
   /* 화면 구성 그림 */
   .figure{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:8px}
   .figscroll{overflow-x:auto}
-  .figscroll svg{display:block;min-width:620px;width:100%;height:auto}
+  .figscroll svg{display:block;min-width:640px;width:100%;height:auto}
   .figcap{padding:8px 14px 12px;font-size:12.5px;color:var(--muted)}
   .pane{fill:#fbfcfd;stroke:var(--line-strong)}
   .pane.mid{fill:#fff}
-  .plabel{font-family:var(--font);font-size:13.5px;font-weight:700;fill:var(--ink)}
-  .ptext{font-family:var(--font);font-size:11.5px;fill:var(--muted)}
+  .pane.on{fill:var(--brand-soft);stroke:var(--brand)}
+  .pane.dark{fill:#fff;stroke:var(--ink)}
+  .plabel{font-family:var(--font);font-size:13px;font-weight:700;fill:var(--ink)}
+  .plabel.b{fill:var(--brand)}
+  .ptext{font-family:var(--font);font-size:11px;fill:var(--muted)}
+  .ptext.ink{fill:var(--ink)}
   .prow{fill:#eef1f4}
   .prow.b{fill:var(--brand-soft)}
+  .prow.dark{fill:var(--ink)}
+  .prow.line{fill:var(--line)}
+  .pdash{fill:#fafbfc;stroke:#c2c8d0;stroke-dasharray:3 3}
   .pdot{fill:var(--brand)}
+  .pwhite{font-family:var(--font);font-size:11px;fill:#fff;font-weight:700}
 
   /* 배지 */
   .badge{display:inline-block;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:6px}
   .badge.req{background:var(--req-soft);color:#c25a10}
   .badge.rec{background:var(--brand-soft);color:var(--brand)}
+  .badge.sel{background:var(--sel-soft);color:var(--sel)}
   .fieldlist{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
   .fieldlist span{font-size:12.5px;background:var(--panel);border:1px solid var(--line-strong);border-radius:8px;padding:5px 10px}
   .fieldlist span em{font-family:var(--mono);font-style:normal;font-size:11px;color:var(--muted);margin-left:5px}
@@ -126,6 +137,7 @@
   details[open] summary:before{content:'−'}
   summary:hover{background:#fafbfc}
   details p{margin:0;padding:0 20px 18px 42px;font-size:13.5px;color:#4b5563}
+  details p+p{padding-top:0;margin-top:-8px;padding-bottom:18px}
 
   .final{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:34px;text-align:center}
   .final h2{margin:0 0 8px;font-size:21px;letter-spacing:-.02em}
@@ -157,7 +169,7 @@
   <div class="wrap">
     <div class="eyebrow">Metadata Authoring · HealthDCAT-KR</div>
     <h1>데이터셋 하나를<br><span>RDF 메타데이터</span>로 만듭니다</h1>
-    <p>항목을 채우면 HealthDCAT-KR 명세에 맞는 데이터세트·배포 형식 파일이 만들어집니다.
+    <p>항목을 채우면 HealthDCAT-KR 명세에 맞는 RDF 파일이 만들어집니다. 배포까지 한 파일에 담깁니다.
        설치할 것도, 계정도 없습니다. 브라우저에서 열고 바로 씁니다.</p>
     <div class="btns">
       <a class="btn p" href="tool.html">메타데이터 생성 시작 →</a>
@@ -172,25 +184,29 @@
     <div class="shead">
       <div class="no">01</div>
       <h2>무엇이 만들어지나</h2>
-      <p>데이터세트와 배포 형식은 서로 다른 클래스이므로 <b>파일 두 개</b>로 나뉘어 나옵니다.
-         파일 이름에는 데이터셋 이름이 들어갑니다.</p>
+      <p>데이터셋 한 건이 <b>파일 하나</b>로 나옵니다. 배포는 따로 떨어지지 않고
+         데이터셋 안 <code>dcat:distribution</code> 아래에 그대로 들어갑니다.</p>
     </div>
     <div class="outrow">
       <div class="outcard">
-        <div class="fn">HealthDCAT-KR_데이터셋이름_데이터셋.rdf</div>
+        <div class="fn">HealthDCAT-KR_데이터셋이름.rdf</div>
         <span class="qn">dcat:Dataset</span>
-        <p>제목·설명·주제·접근 권한처럼 데이터셋 자체를 설명하는 26개 항목이 담깁니다.</p>
+        <p>제목·설명·주제·접근 권한처럼 데이터셋 자체를 설명하는 25개 항목이 담깁니다.</p>
       </div>
       <div class="outcard">
-        <div class="fn">HealthDCAT-KR_데이터셋이름_배포.rdf</div>
-        <span class="qn">dcat:Distribution</span>
-        <p>CSV·XLSX처럼 실제로 내려받는 파일 형태별 배포본이 담기며, <code>dct:isPartOf</code>로 데이터셋과 이어집니다.</p>
+        <div class="fn">└ dcat:distribution › dcat:Distribution</div>
+        <span class="qn">같은 파일 안</span>
+        <p>CSV·XLSX처럼 실제로 내려받는 파일 형태별 배포본이 데이터셋 안에 중첩됩니다. 따로 이어 주는 값이 필요 없습니다.</p>
       </div>
     </div>
     <div class="fmts">
       <span class="fmt">JSON-LD · .jsonld</span>
       <span class="fmt">Turtle · .ttl</span>
       <span class="fmt">RDF/XML · .rdf</span>
+    </div>
+    <div class="callout">
+      <b>파일 이름</b> · 뒷부분 이름은 <b>제목</b>에서 가져오고, 제목이 비어 있으면 <b>식별자</b>, 둘 다 없으면 <code>이름없음</code>이 들어갑니다.
+      배포를 적지 않았다면 <code>dcat:distribution</code> 없이 데이터셋만 담깁니다.
     </div>
     <div class="callout">
       <b>미리보기</b> · 내려받기 전에 오른쪽 칸에서 세 가지 형식 중 아무거나 골라 결과를 그대로 확인할 수 있습니다.
@@ -202,7 +218,8 @@
     <div class="shead">
       <div class="no">02</div>
       <h2>두 가지 작성 방식</h2>
-      <p>한 건이면 직접 입력이 빠르고, 여러 건이면 엑셀이 편합니다. 결과로 나오는 파일은 같습니다.</p>
+      <p>도구를 열면 맨 위에 <b>직접 입력</b>과 <b>엑셀로 일괄 등록</b> 두 개의 탭이 있습니다.
+         한 건이면 직접 입력이 빠르고, 여러 건이면 엑셀이 편합니다. 결과로 나오는 파일은 같습니다.</p>
     </div>
     <div class="tablebox">
       <div class="tscroll">
@@ -210,9 +227,10 @@
           <thead><tr><th style="width:130px"></th><th>직접 입력</th><th>엑셀로 일괄 등록</th></tr></thead>
           <tbody>
             <tr><td class="h">알맞은 때</td><td>데이터셋 1건을 꼼꼼히 작성할 때</td><td>여러 데이터셋을 한 번에 올릴 때</td></tr>
-            <tr><td class="h">작성 방법</td><td>항목별 입력 칸에 직접 입력</td><td>양식(.xlsx)을 내려받아 채운 뒤 올리기</td></tr>
-            <tr><td class="h">검증</td><td>항목 단위 — 비어 있거나 형식이 어긋난 칸을 표시</td><td>행·열 단위 — 오류가 있는 행만 모아 보기</td></tr>
-            <tr><td class="h">결과 파일</td><td>데이터셋 1건 → 파일 2개</td><td>데이터셋 N건 → 이름별로 각각 2개씩</td></tr>
+            <tr><td class="h">작성 방법</td><td>항목별 입력 칸에 직접 입력</td><td>양식을 내려받아 채운 뒤 올리기</td></tr>
+            <tr><td class="h">양식 파일</td><td>없음</td><td>데이터셋 양식 · 배포 양식 (<code>.xlsx</code> 또는 <code>.csv</code>) — 따로 써도 되고 함께 써도 됩니다</td></tr>
+            <tr><td class="h">검증</td><td><b>필수값 검증</b> — 비었거나 형식이 어긋난 칸을 빨갛게 표시하고 첫 칸으로 이동</td><td><b>검증하기</b> — 셀 단위로 검사하고 오류 행만 모아 보기</td></tr>
+            <tr><td class="h">결과 파일</td><td>데이터셋 1건 → 파일 1개</td><td>데이터셋 N건 → 이름별로 1개씩</td></tr>
           </tbody>
         </table>
       </div>
@@ -223,85 +241,131 @@
     <div class="shead">
       <div class="no">03</div>
       <h2>화면 보는 법</h2>
-      <p>왼쪽에서 무엇을 쓸지 고르고, 가운데에서 채우고, 오른쪽에서 진행 상황과 결과를 봅니다.</p>
+      <p>위에서 방식을 고르고, 그 아래에서 데이터셋과 배포를 나눠 채우고, 오른쪽에서 진행 상황과 결과를 봅니다.</p>
     </div>
     <div class="figure">
       <div class="figscroll">
-        <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img"
-             aria-label="왼쪽 항목 고르기, 가운데 작성 칸, 오른쪽 작성 현황과 미리보기로 이루어진 화면 구성도">
-          <!-- 왼쪽 -->
-          <rect class="pane" x="16" y="20" width="200" height="264" rx="12"/>
-          <text class="plabel" x="34" y="48">항목 고르기</text>
-          <rect class="prow b" x="34" y="62" width="164" height="34" rx="8"/>
-          <text class="ptext" x="46" y="83">데이터세트 · 26개 항목</text>
-          <rect class="prow" x="34" y="104" width="164" height="34" rx="8"/>
-          <text class="ptext" x="46" y="125">데이터 배포방식 · 5개 항목</text>
-          <text class="ptext" x="34" y="166">거르기</text>
-          <rect class="prow" x="34" y="176" width="46" height="24" rx="7"/>
-          <text class="ptext" x="47" y="192">전체</text>
-          <rect class="prow" x="86" y="176" width="46" height="24" rx="7"/>
-          <text class="ptext" x="99" y="192">필수</text>
-          <rect class="prow" x="138" y="176" width="46" height="24" rx="7"/>
-          <text class="ptext" x="151" y="192">권장</text>
+        <svg viewBox="0 0 880 424" xmlns="http://www.w3.org/2000/svg" role="img"
+             aria-label="위쪽 입력 방식 탭, 데이터셋과 데이터 배포방식 선택 카드, 거르기와 내려받기 버튼 줄, 작성 칸, 그리고 오른쪽의 작성 현황·구분 표기·미리보기로 이루어진 화면 구성도">
+          <!-- 입력 방식 탭 -->
+          <rect class="pane dark" x="16" y="14" width="274" height="42" rx="11"/>
+          <text class="plabel" x="32" y="34">직접 입력</text>
+          <text class="ptext" x="32" y="48">항목을 하나씩 작성 · 1건</text>
+          <rect class="pane" x="306" y="14" width="274" height="42" rx="11"/>
+          <text class="plabel" x="322" y="34">엑셀로 일괄 등록</text>
+          <text class="ptext" x="322" y="48">양식 내려받기 → 작성 → 업로드</text>
 
-          <!-- 가운데 -->
-          <rect class="pane mid" x="232" y="20" width="352" height="264" rx="12"/>
-          <text class="plabel" x="252" y="48">작성 칸</text>
-          <circle class="pdot" cx="256" cy="70" r="3"/>
-          <text class="ptext" x="268" y="74">제목 · dct:title · 필수</text>
-          <rect class="prow" x="252" y="82" width="312" height="26" rx="7"/>
-          <circle class="pdot" cx="256" cy="130" r="3"/>
-          <text class="ptext" x="268" y="134">설명 · dct:description · 필수 · @ko</text>
-          <rect class="prow" x="252" y="142" width="312" height="40" rx="7"/>
-          <circle class="pdot" cx="256" cy="204" r="3"/>
-          <text class="ptext" x="268" y="208">배포방식 · dcat:distribution · 권장</text>
-          <rect class="prow" x="252" y="216" width="312" height="26" rx="7"/>
-          <text class="ptext" x="264" y="234">예: CSV, XLSX</text>
+          <!-- 작성 대상 선택 -->
+          <rect class="pane on" x="16" y="68" width="274" height="56" rx="11"/>
+          <text class="plabel b" x="32" y="90">데이터셋</text>
+          <text class="ptext" x="32" y="105">dcat:Dataset</text>
+          <text class="ptext" x="32" y="118">25개 항목 · 필수 6 · 권장 19 · 선택 0</text>
+          <rect class="pane" x="306" y="68" width="274" height="56" rx="11"/>
+          <text class="plabel" x="322" y="90">데이터 배포방식</text>
+          <text class="ptext" x="322" y="105">dcat:Distribution</text>
+          <text class="ptext" x="322" y="118">5개 항목 · 필수 1 · 권장 4 · 선택 0</text>
 
-          <!-- 오른쪽 -->
-          <rect class="pane" x="600" y="20" width="264" height="130" rx="12"/>
-          <text class="plabel" x="620" y="48">작성 현황</text>
-          <text class="ptext" x="620" y="72">데이터셋 입력</text>
-          <text class="ptext" x="806" y="72">12 / 26</text>
-          <text class="ptext" x="620" y="94">배포 건수</text>
-          <text class="ptext" x="822" y="94">2건</text>
-          <text class="ptext" x="620" y="116">필수 미입력</text>
-          <text class="ptext" x="828" y="116">3개</text>
-          <rect class="prow b" x="620" y="126" width="224" height="1" rx="1"/>
+          <!-- 도구 줄 -->
+          <rect class="pane mid" x="16" y="136" width="564" height="40" rx="11"/>
+          <rect class="prow dark" x="30" y="147" width="42" height="18" rx="9"/>
+          <text class="pwhite" x="43" y="160">전체</text>
+          <rect class="prow" x="78" y="147" width="42" height="18" rx="9"/>
+          <text class="ptext" x="91" y="160">필수</text>
+          <rect class="prow" x="126" y="147" width="42" height="18" rx="9"/>
+          <text class="ptext" x="139" y="160">권장</text>
+          <rect class="pdash" x="174" y="147" width="94" height="18" rx="9"/>
+          <text class="ptext" x="184" y="160">선택 · 업데이트 예정</text>
+          <rect class="prow" x="316" y="146" width="72" height="20" rx="7"/>
+          <text class="ptext" x="325" y="160">속성 표로</text>
+          <rect class="prow" x="394" y="146" width="66" height="20" rx="7"/>
+          <text class="ptext" x="401" y="160">필수값 검증</text>
+          <rect class="prow b" x="466" y="146" width="100" height="20" rx="7"/>
+          <text class="ptext" x="473" y="160">JSON-LD · TTL · RDF</text>
 
-          <rect class="pane" x="600" y="164" width="264" height="120" rx="12"/>
-          <text class="plabel" x="620" y="192">미리보기</text>
-          <rect class="prow" x="620" y="204" width="60" height="20" rx="6"/>
-          <text class="ptext" x="631" y="218">JSON-LD</text>
-          <rect class="prow" x="686" y="204" width="52" height="20" rx="6"/>
-          <text class="ptext" x="697" y="218">Turtle</text>
-          <rect class="prow" x="744" y="204" width="60" height="20" rx="6"/>
-          <text class="ptext" x="753" y="218">RDF/XML</text>
-          <rect class="prow" x="620" y="234" width="224" height="8" rx="4"/>
-          <rect class="prow" x="620" y="248" width="180" height="8" rx="4"/>
-          <rect class="prow" x="620" y="262" width="204" height="8" rx="4"/>
+          <!-- 작성 칸 -->
+          <rect class="pane mid" x="16" y="188" width="564" height="222" rx="12"/>
+          <text class="plabel" x="34" y="212">데이터셋</text>
+          <circle class="pdot" cx="38" cy="236" r="3"/>
+          <text class="ptext ink" x="50" y="240">제목 · dct:title · 필수 · @ko</text>
+          <rect class="prow" x="34" y="248" width="528" height="26" rx="7"/>
+          <circle class="pdot" cx="38" cy="296" r="3"/>
+          <text class="ptext ink" x="50" y="300">설명 · dct:description · 필수 · @ko</text>
+          <rect class="prow" x="34" y="308" width="528" height="38" rx="7"/>
+          <circle class="pdot" cx="38" cy="368" r="3"/>
+          <text class="ptext ink" x="50" y="372">배포방식 · dcat:distribution · 권장</text>
+          <rect class="prow" x="34" y="380" width="528" height="22" rx="7"/>
+          <text class="ptext" x="44" y="395">예: CSV, XLSX  →  배포 카드 2건이 자동으로 준비됩니다</text>
+
+          <!-- 오른쪽: 작성 현황 -->
+          <rect class="pane" x="596" y="14" width="268" height="146" rx="12"/>
+          <text class="plabel" x="614" y="38">작성 현황</text>
+          <text class="ptext" x="614" y="58">필수 항목 5 / 8</text>
+          <rect class="prow line" x="614" y="66" width="232" height="6" rx="3"/>
+          <rect class="prow b" x="614" y="66" width="105" height="6" rx="3"/>
+          <text class="ptext" x="614" y="98">데이터셋 입력</text>
+          <text class="ptext ink" x="800" y="98">12 / 25</text>
+          <text class="ptext" x="614" y="124">배포 건수</text>
+          <text class="ptext ink" x="816" y="124">2건</text>
+          <text class="ptext" x="614" y="148">숫자를 누르면 비어 있는 항목이 펼쳐집니다</text>
+
+          <!-- 오른쪽: 구분 표기 -->
+          <rect class="pane" x="596" y="172" width="268" height="76" rx="12"/>
+          <text class="plabel" x="614" y="196">구분 표기</text>
+          <rect class="prow" x="614" y="208" width="44" height="18" rx="6" style="fill:#fff3ea"/>
+          <text class="ptext" x="628" y="221" style="fill:#c25a10">필수</text>
+          <rect class="prow b" x="666" y="208" width="44" height="18" rx="6"/>
+          <text class="ptext" x="680" y="221" style="fill:#3182f6">권장</text>
+          <rect class="prow" x="718" y="208" width="44" height="18" rx="6"/>
+          <text class="ptext" x="732" y="221">선택</text>
+          <text class="ptext" x="614" y="242">항목마다 구분은 하나만 표시합니다</text>
+
+          <!-- 오른쪽: 미리보기 -->
+          <rect class="pane" x="596" y="260" width="268" height="150" rx="12"/>
+          <text class="plabel" x="614" y="284">미리보기</text>
+          <rect class="prow dark" x="614" y="296" width="62" height="20" rx="6"/>
+          <text class="pwhite" x="624" y="310">JSON-LD</text>
+          <rect class="prow" x="682" y="296" width="52" height="20" rx="6"/>
+          <text class="ptext" x="693" y="310">Turtle</text>
+          <rect class="prow" x="740" y="296" width="62" height="20" rx="6"/>
+          <text class="ptext" x="749" y="310">RDF/XML</text>
+          <rect class="prow" x="614" y="330" width="232" height="8" rx="4"/>
+          <rect class="prow" x="614" y="346" width="186" height="8" rx="4"/>
+          <rect class="prow" x="614" y="362" width="212" height="8" rx="4"/>
+          <rect class="prow" x="614" y="378" width="160" height="8" rx="4"/>
+          <rect class="prow" x="614" y="394" width="200" height="8" rx="4"/>
         </svg>
       </div>
-      <div class="figcap">작성 현황의 숫자는 눌러서 펼칠 수 있습니다. 비어 있는 항목이 목록으로 나오고, 누르면 그 칸으로 바로 이동합니다.</div>
+      <div class="figcap">작성 현황의 숫자는 눌러서 펼칠 수 있습니다. 비어 있는 항목과 등록된 배포가 목록으로 나오고, 누르면 그 칸으로 바로 이동합니다.</div>
     </div>
 
     <div class="cards" style="margin-top:14px">
       <div class="card">
         <h3>필수 · 권장 구분</h3>
-        <p>항목마다 <span class="badge req">필수</span> <span class="badge rec">권장</span> 중 하나가 붙습니다.
+        <p>항목마다 <span class="badge req">필수</span> <span class="badge rec">권장</span> <span class="badge sel">선택</span> 중 <b>하나만</b> 붙습니다.
            위쪽 거르기로 필수만 골라 먼저 채우면 빠릅니다.</p>
+        <p>지금은 선택에 해당하는 항목이 없어 <b>선택</b> 거르기는 업데이트 예정으로 두었고, 누르면 안내만 뜹니다.</p>
       </div>
       <div class="card">
         <h3>필수값 검증</h3>
-        <p>비어 있는 필수 항목과 형식이 어긋난 값(URL·이메일)을 빨갛게 표시하고 첫 번째 항목으로 이동합니다.</p>
+        <p>비어 있는 필수 항목과 형식이 어긋난 값(<code>http(s)://</code>로 시작하지 않는 URL, 이메일 모양이 아닌 연락처)을 빨갛게 표시하고 첫 번째 항목으로 이동합니다.</p>
+        <p>아무 값도 넣지 않은 빈 배포 카드는 아직 작성 전으로 보고 검사하지 않습니다.</p>
       </div>
       <div class="card">
         <h3>배포방식 적기</h3>
-        <p>데이터세트의 배포방식 칸에 <code>CSV, XLSX</code>처럼 파일 형태를 쉼표로 적으면 그만큼 배포 건이 준비됩니다.</p>
+        <p>데이터셋의 배포방식 칸에 <code>CSV, XLSX</code>처럼 쉼표로 적고 칸을 벗어나면, 그만큼 <b>데이터 배포방식</b> 카드가 자동으로 만들어집니다.</p>
+        <p><code>엑셀</code>은 XLSX로, <code>한글</code>은 HWPX로 알아서 바꿉니다. 목록에 없는 형식은 빨간 글씨로 알려 줍니다.</p>
       </div>
       <div class="card">
         <h3>언어 태그</h3>
-        <p>오른쪽 위 기본 언어에 따라 제목·설명 같은 글 항목에 <code>@ko</code> 또는 <code>@en</code>이 자동으로 붙습니다.</p>
+        <p>오른쪽 위 <b>기본 언어</b>에 따라 제목·설명·주제·키워드·인구범위·품질 정보에 <code>@ko</code> 또는 <code>@en</code>이 자동으로 붙습니다.</p>
+      </div>
+      <div class="card">
+        <h3>속성 표로 보기</h3>
+        <p>입력 칸 대신 항목·속성명·설명·구분을 한 표로 볼 수 있습니다. 명세를 훑어볼 때 쓰고, 표 보기에서는 검증 표시가 나오지 않습니다.</p>
+      </div>
+      <div class="card">
+        <h3>화면이 반으로 갈라질 때</h3>
+        <p>값을 하나라도 넣으면 작성 칸과 미리보기가 좌우로 벌어집니다. 화면이 좁으면 위아래로 쌓입니다.</p>
       </div>
     </div>
   </section>
@@ -310,29 +374,35 @@
     <div class="shead">
       <div class="no">04</div>
       <h2>엑셀로 여러 건 한 번에</h2>
-      <p>데이터셋 양식과 배포 양식, 두 개의 파일을 씁니다. 두 양식은 <b>데이터셋식별자</b>로 이어집니다.</p>
+      <p>데이터셋 양식과 배포 양식, 두 개의 파일을 씁니다. 두 양식은 서로 독립이라
+         <b>데이터셋만</b>, <b>배포만</b>, <b>둘 다</b> 어느 쪽으로도 만들 수 있습니다.</p>
     </div>
     <div class="steps">
       <div class="step">
         <div class="n">1</div>
         <div><h3>양식 내려받기</h3>
-          <p>데이터셋 양식과 배포 양식을 각각 받습니다. 첫 행은 항목 이름, 둘째 행은 속성명, 셋째 행은 작성 예시입니다. <b>4행부터</b> 채우세요.</p></div>
+          <p>데이터셋 양식과 배포 양식을 각각 받습니다. <code>.xlsx</code>와 <code>.csv</code> 중에 고를 수 있고, xlsx에는 항목 설명이 담긴 <b>작성 안내</b> 시트가 함께 들어 있습니다.</p>
+          <p>첫 행은 <b>항목명 [구분]</b>, 둘째 행은 속성명, 셋째 행은 작성 예시입니다. <b>4행부터</b> 한 행에 하나씩 채우세요. 여러 값은 쉼표로, 기간은 <code>2024-01-01 ~ 2024-12-31</code> 형식으로 씁니다.</p></div>
       </div>
       <div class="step">
         <div class="n">2</div>
-        <div><h3>채우기 · 두 양식 잇기</h3>
-          <p>데이터셋 양식의 <code>식별자</code>에 적은 값을 배포 양식의 <code>데이터셋식별자</code>에 그대로 적으면 두 줄이 이어집니다.</p></div>
+        <div><h3>채우기 · 식별자는 건드리지 않기</h3>
+          <p>데이터셋 양식의 <code>식별자</code> 열은 <b>비워 두세요</b>. 사람이 적는 값이 아니라, 파일을 올리는 순간 <code>KHDP-연월일시분초</code> 형식으로 자동 부여됩니다.</p>
+          <p>배포 양식 첫 열 <code>연결 데이터셋</code>(<code>dct:title</code>)도 비워 두면 됩니다. 두 양식을 함께 올리면 <b>적은 순서대로 1:1</b>로 붙습니다 — 첫 배포 행은 첫 데이터셋 행에.</p>
+          <p>순서가 다르거나 데이터셋 한 건에 배포를 여러 건 달 때만 <b>데이터셋 제목</b>을 적습니다. 적는 자리는 배포 양식 <b>첫 열</b>이고, 3행 예시 첫 칸에 <code>국민건강영양조사 2024</code>가 들어 있어 바로 보입니다.</p></div>
       </div>
       <div class="step">
         <div class="n">3</div>
         <div><h3>올리고 검증하기</h3>
-          <p>두 파일을 함께 끌어다 놓으면 어느 쪽 양식인지 알아서 구분합니다. 검증하면 오류가 있는 행만 모아 볼 수 있고, 표 보기와 카드 보기를 오갈 수 있습니다.</p>
-          <p>배포 양식만 올려서 배포 파일만 만들어도 됩니다.</p></div>
+          <p>올리는 칸이 <b>데이터셋 파일</b>과 <b>배포 파일</b> 두 개로 나뉘어 있습니다. 각 칸에 끌어다 놓거나 눌러서 고르세요. 시트 이름과 첫 열 머리글로 어느 양식인지 알아보기 때문에, 칸을 바꿔 넣어도 알맞은 쪽으로 들어가고 그 사실을 알려 줍니다.</p>
+          <p><b>검증하기</b>를 누르면 데이터셋·배포를 함께 검사합니다. 오류가 있는 행만 모아 볼 수 있고, <b>행별 카드</b>와 <b>표</b>를 오갈 수 있습니다. 오류는 어느 항목에서 몇 건인지 묶어서 보여 줍니다.</p>
+          <p>한쪽만 올려도 됩니다. 데이터셋 양식만 올리면 배포 없는 데이터셋이, 배포 양식만 올리면 그 배포를 담은 데이터셋이 만들어집니다.</p></div>
       </div>
       <div class="step">
         <div class="n">4</div>
         <div><h3>내려받기</h3>
-          <p>데이터셋 이름별로 파일이 따로 나옵니다. 3건이면 <code>_데이터셋</code> 3개와 <code>_배포</code> 3개, 모두 6개입니다.</p></div>
+          <p>데이터셋 이름별로 파일이 하나씩 나옵니다. 3건이면 파일 3개이고, 배포는 각 파일 안에 들어 있습니다. 이름은 제목에서 가져오고, 비어 있으면 식별자, 그것도 없으면 행 번호를 씁니다.</p>
+          <p>10건이 넘으면 파일이 많이 생기니 한 번 더 확인을 묻습니다.</p></div>
       </div>
     </div>
 
@@ -340,28 +410,31 @@
       <div class="tscroll">
         <table>
           <thead>
-            <tr><th class="mono" style="width:120px">양식</th><th class="mono">식별자 / 데이터셋식별자</th><th class="mono">그 밖의 칸</th></tr>
+            <tr><th class="mono" style="width:120px">양식</th><th class="mono">첫 열 · 식별자 / 연결 데이터셋</th><th class="mono">그 밖의 칸</th></tr>
           </thead>
           <tbody>
-            <tr><td class="h">데이터셋</td><td class="mono">NDI-2024-001</td><td>제목, 설명, 주제, 접근 권한 …</td></tr>
-            <tr><td class="h">배포</td><td class="mono">NDI-2024-001</td><td>접근 URL, 파일 형식 = CSV</td></tr>
-            <tr><td class="h">배포</td><td class="mono">NDI-2024-001</td><td>접근 URL, 파일 형식 = XLSX</td></tr>
+            <tr><td class="h">데이터셋</td><td>비워 둠</td><td>제목 = 국민건강영양조사 2024, 설명, 주제 …</td></tr>
+            <tr><td class="h">배포</td><td>비워 둠</td><td>접근 URL, 파일 형식 = CSV</td></tr>
+            <tr><td class="h">배포</td><td>국민건강영양조사 2024</td><td>접근 URL, 파일 형식 = XLSX</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-    <div class="callout">같은 식별자를 쓴 배포 두 줄은 데이터셋 한 건에 배포 형식 두 개로 묶입니다.</div>
+    <div class="callout"><b>식별자를 옮겨 적을 일이 없습니다</b> · 식별자는 양식을 내려받을 때가 아니라 <b>올릴 때</b> 만들어집니다.
+      그래서 데이터셋 양식과 배포 양식을 며칠 차이로 받아 써도 상관없습니다. 위 예처럼 첫 배포는 비워 두면 순서로 붙고,
+      같은 데이터셋에 두 번째 배포를 달 때만 그 데이터셋의 <b>제목</b>을 적으면 됩니다.
+      적어 둔 제목을 데이터셋 양식에서 찾지 못하면 <b>연결 안 된 배포</b>로 세어 알려 줍니다.</div>
   </section>
 
   <section id="fields">
     <div class="shead">
       <div class="no">05</div>
       <h2>항목 구성</h2>
-      <p>데이터세트 26개, 배포 형식 5개 항목입니다.</p>
+      <p>데이터셋 25개, 데이터 배포방식 5개 항목입니다.</p>
     </div>
     <div class="cards">
       <div class="card">
-        <h3>데이터세트 <span style="font-weight:400;color:var(--muted);font-size:12.5px">26개 · 필수 6 / 권장 20</span></h3>
+        <h3>데이터셋 <span style="font-weight:400;color:var(--muted);font-size:12.5px">25개 · 필수 6 / 권장 19</span></h3>
         <p style="margin-bottom:2px">필수 항목은 다음 여섯 개입니다.</p>
         <div class="fieldlist">
           <span>제목<em>dct:title</em></span>
@@ -373,7 +446,7 @@
         </div>
       </div>
       <div class="card">
-        <h3>배포 형식 <span style="font-weight:400;color:var(--muted);font-size:12.5px">5개 · 필수 1 / 권장 4</span></h3>
+        <h3>데이터 배포방식 <span style="font-weight:400;color:var(--muted);font-size:12.5px">5개 · 필수 1 / 권장 4</span></h3>
         <p style="margin-bottom:2px">접근 URL만 필수입니다.</p>
         <div class="fieldlist">
           <span>접근 URL<em>dcat:accessURL</em></span>
@@ -385,8 +458,8 @@
       </div>
     </div>
     <div class="callout">
-      필수·권장 구분은 HealthDCAT-AP의 <b>제한(Restricted)</b> 권한 기준을 준용합니다. 자세한 근거는
-      <a href="https://kdyoung100.github.io/HealthDCAT-KR/">HealthDCAT-KR 프로파일 문서</a>에서 볼 수 있습니다.
+      항목마다 접근 권한 수준별로 구분이 정해져 있고, 화면에는 그중 <b>가장 엄격한 기준</b>의 구분 하나만 표시합니다.
+      자세한 근거는 <a href="https://kdyoung100.github.io/HealthDCAT-KR/">HealthDCAT-KR 프로파일 문서</a>에서 볼 수 있습니다.
     </div>
   </section>
 
@@ -397,28 +470,51 @@
     </div>
     <div class="faq">
       <details>
+        <summary>식별자는 언제, 누가 만드나요?</summary>
+        <p>사람이 적는 값이 아닙니다. 양식에는 어느 행에도 들어 있지 않고, 파일을 <b>올리는 순간</b> 행마다 <code>KHDP-연월일시분초</code> 형식으로 부여됩니다. 직접 입력 화면에서는 화면을 열 때 부여되고, 그 칸은 고칠 수 없게 잠겨 있습니다.</p>
+        <p>그래서 데이터셋 양식과 배포 양식을 언제 내려받았는지, 몇 초 차이인지는 상관이 없습니다. 두 파일 사이에 옮겨 적어야 하는 값이 없습니다.</p>
+      </details>
+      <details>
+        <summary>배포를 어느 데이터셋에 붙일지는 어떻게 정하나요?</summary>
+        <p>기본은 <b>적은 순서</b>입니다. 첫 배포 행은 첫 데이터셋 행에, 둘째는 둘째에 붙습니다. 데이터셋이 한 건뿐이면 배포 행 전부가 그 데이터셋에 붙습니다.</p>
+        <p>순서가 다르거나 데이터셋 한 건에 배포를 여러 건 달 때는, 배포 양식 <b>첫 열</b> <code>연결 데이터셋</code>(<code>dct:title</code>)에 그 데이터셋의 <b>제목</b>을 적으세요. 3행 예시 첫 칸이 그 자리입니다. 띄어쓰기와 대소문자는 무시하고 맞춰 봅니다.</p>
+        <p>이미 발급된 식별자를 알고 있다면 제목 대신 그 값을 적어도 됩니다.</p>
+      </details>
+      <details>
         <summary>입력한 내용이 어딘가로 전송되나요?</summary>
         <p>아니요. 모든 처리는 브라우저 안에서 이루어지고, 만든 파일도 기기에 바로 저장됩니다. 다만 새로고침하면 작성 중인 내용은 사라지니 중간중간 내려받아 두세요.</p>
       </details>
       <details>
         <summary>파일 형태가 CSV와 XLSX 두 가지인데 어떻게 적나요?</summary>
-        <p>배포는 파일 형태 하나당 한 건입니다. 데이터세트의 배포방식 칸에 <code>CSV, XLSX</code>처럼 적고, 데이터 배포방식 화면에서 각 건의 접근 URL을 채우면 됩니다.</p>
+        <p>배포는 파일 형태 하나당 한 건입니다. 데이터셋의 배포방식 칸에 <code>CSV, XLSX</code>처럼 적고 칸을 벗어나면 배포 카드가 두 개 준비되니, 데이터 배포방식 화면에서 각 건의 접근 URL을 채우면 됩니다.</p>
+      </details>
+      <details>
+        <summary>데이터셋 파일과 배포 파일을 반대 칸에 올렸습니다.</summary>
+        <p>그대로 두어도 됩니다. 시트 이름과 첫 열 머리글로 어느 양식인지 판별해 알맞은 쪽으로 넣고, 어느 양식으로 인식했는지 알려 줍니다.</p>
       </details>
       <details>
         <summary>배포 양식만 올려도 되나요?</summary>
-        <p>됩니다. 데이터셋식별자별로 묶어 배포 파일만 만들어 줍니다. 식별자가 비어 있는 행은 <code>연결안된배포</code>라는 이름으로 따로 모입니다.</p>
+        <p>됩니다. 배포를 담을 데이터셋 한 건을 만들어 그 안에 넣고, 식별자는 그때 부여합니다. <code>연결 데이터셋</code> 칸에 제목을 적어 뒀다면 그 제목이 데이터셋 제목으로 들어갑니다.</p>
       </details>
       <details>
         <summary>거르기의 ‘선택’이 눌리지 않습니다.</summary>
-        <p>현재 항목은 모두 필수 또는 권장이라 선택에 해당하는 항목이 없습니다. 그래서 눌리지 않도록 두었고, 항목이 추가되면 열립니다.</p>
+        <p>현재 항목은 모두 필수 또는 권장이라 선택에 해당하는 항목이 없습니다. 그래서 업데이트 예정으로 표시해 두었고, 선택 항목이 추가되면 열립니다.</p>
       </details>
       <details>
         <summary>잘못 올린 엑셀 파일은 어떻게 빼나요?</summary>
         <p>올라온 파일 이름 오른쪽의 × 를 누르면 빠집니다. 같은 파일을 고쳐서 다시 올리는 것도 됩니다.</p>
       </details>
       <details>
+        <summary>제목을 비워 두면 파일 이름이 어떻게 되나요?</summary>
+        <p>식별자를 대신 씁니다. 둘 다 없으면 <code>HealthDCAT-KR_이름없음.rdf</code>로 저장되니, 내려받기 전에 제목을 채우는 편이 좋습니다.</p>
+      </details>
+      <details>
         <summary>파일 이름을 바꿔도 되나요?</summary>
-        <p>됩니다. 이름은 사람이 알아보기 위한 것이고, 데이터 안의 식별자(<code>dct:identifier</code>)와 <code>dct:isPartOf</code> 연결이 실제 기준입니다.</p>
+        <p>됩니다. 이름은 사람이 알아보기 위한 것이고, 데이터 안의 식별자(<code>dct:identifier</code>)와 중첩 구조가 실제 기준입니다.</p>
+      </details>
+      <details>
+        <summary>엑셀 양식을 열 수 없다는 안내가 뜹니다.</summary>
+        <p>엑셀 읽기·쓰기 기능은 외부 스크립트를 불러와 씁니다. 사내망 등으로 차단되어 있으면 <code>.csv</code> 양식을 대신 쓰거나 네트워크를 확인해 주세요.</p>
       </details>
     </div>
   </section>
