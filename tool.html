@@ -83,6 +83,14 @@
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center}
   .row2 .sep{display:none}
   @media(max-width:520px){.row2{grid-template-columns:1fr}}
+  .xbody code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#f6f7f9;border:1px solid var(--line);border-radius:6px;padding:1px 5px}
+  /* 자동 부여 식별자 */
+  .autoid{display:flex;align-items:center;gap:8px}
+  .autoid input{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;letter-spacing:.2px;background:#f6f7f9;color:var(--ink)}
+  .autoid input[readonly]{cursor:default}
+  .autoid .idbtn{flex:0 0 auto;background:var(--brand-soft);color:var(--brand2);border:none;border-radius:10px;padding:11px 13px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .autoid .idbtn:hover{background:#dce9fd}
+  .autonote{font-size:12px;color:var(--muted);margin-top:6px}
   .unit{display:flex;align-items:center;gap:8px}
   .unit span{font-size:12.5px;color:var(--muted);white-space:nowrap}
   .tagbox{display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1px solid var(--line-strong);border-radius:10px;background:#fff;min-height:44px}
@@ -132,6 +140,17 @@
   .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:.2s;z-index:9}
   .toast.on{opacity:1;transform:translate(-50%,0)}
   .legend{font-size:11.5px;color:var(--muted);line-height:1.7}
+
+  /* ===== 반반 보기 (입력이 시작되면 자동으로 좌우 절반) ===== */
+  .wrap{transition:grid-template-columns .28s ease,max-width .28s ease}
+  @media(min-width:1061px){
+    .wrap.split{max-width:1760px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+    /* 작성 현황이 위, 미리보기가 그 아래. 구분 표기는 자리만 차지하므로 숨긴다 */
+    .wrap.split #legendCard{display:none}
+    .wrap.split .side{height:calc(100vh - 44px)}
+    .wrap.split #fmtCard{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+    .wrap.split pre.out{flex:1 1 auto;max-height:none;min-height:160px;font-size:12.5px;line-height:1.6;word-break:break-word}
+  }
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
   /* ===== 반응형 ===== */
@@ -316,11 +335,13 @@
         <button class="chip soon" data-f="선택" data-soon="1" aria-disabled="true" aria-pressed="false" title="선택 항목은 업데이트 예정입니다">선택<span class="soontag">업데이트 예정</span></button>
       </div>
       <span class="spacer"></span>
+      <button class="tbtn" id="btnClear" title="지금 보고 있는 화면의 입력을 비웁니다">비우기</button>
+      <button class="tbtn" id="btnUndo" hidden>되돌리기</button>
       <button class="tbtn" id="btnTable" aria-pressed="false">속성 표로 보기</button>
       <button class="tbtn" id="btnValidate">필수값 검증</button>
-      <button class="tbtn primary" data-dl="jsonld" title="HealthDCAT-KR_데이터셋이름_데이터셋.jsonld · _배포.jsonld 두 파일">JSON-LD</button>
-      <button class="tbtn primary" data-dl="ttl" title="HealthDCAT-KR_데이터셋이름_데이터셋.ttl · _배포.ttl 두 파일">Turtle</button>
-      <button class="tbtn primary" data-dl="rdf" title="HealthDCAT-KR_데이터셋이름_데이터셋.rdf · _배포.rdf 두 파일">RDF/XML</button>
+      <button class="tbtn primary" data-dl="jsonld" title="HealthDCAT-KR_데이터셋이름.jsonld — 배포까지 한 파일">JSON-LD</button>
+      <button class="tbtn primary" data-dl="ttl" title="HealthDCAT-KR_데이터셋이름.ttl — 배포까지 한 파일">Turtle</button>
+      <button class="tbtn primary" data-dl="rdf" title="HealthDCAT-KR_데이터셋이름.rdf — 배포까지 한 파일">RDF/XML</button>
     </div>
 
     <div class="panelbox">
@@ -338,7 +359,8 @@
           <div class="xbody">
             <h3>양식 내려받기</h3>
             <p><b>데이터셋 양식</b>과 <b>배포 양식</b>은 따로 받습니다. 두 파일 모두 1행 항목명 · 2행 속성명 · 3행 예시이고, <b>4행부터</b> 한 행에 하나씩 작성하세요.
-               배포 양식의 첫 열 <b>데이터셋식별자</b>(dct:identifier)로 데이터셋과 연결됩니다.</p>
+               두 양식은 서로 독립이라 한쪽만 만들어 올려도 됩니다.<br>
+               <b>식별자</b> 열은 비워 두세요. 파일을 올리는 순간 <code>KHDP-연월일시분초</code>로 부여됩니다.<br>배포 양식 첫 열 <b>연결 데이터셋</b>도 비워 두면 됩니다. 두 양식을 함께 올리면 <b>적은 순서대로 1:1</b>로 붙습니다(첫 배포 행 ↔ 첫 데이터셋 행). 순서가 다르거나 한 데이터셋에 배포가 여러 건일 때만 <b>데이터셋 제목</b>을 적어 주세요.</p>
             <div class="fmtrow">
               <button class="tbtn primary" data-tpl="ds:xlsx">데이터셋 양식 (.xlsx)</button>
               <button class="tbtn" data-tpl="ds:csv">데이터셋 (.csv)</button>
@@ -436,7 +458,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="legendCard">
       <h3>구분 표기</h3>
       <div class="legend">
         <div><span class="badge req">필수</span> 반드시 기입 &nbsp; <span class="badge rec">권장</span> 권장 &nbsp; <span class="badge sel">선택</span> 선택</div>
@@ -473,13 +495,13 @@ const DATASET=[
  {id:'theme',ko:'주제',qn:'dcat:theme',desc:'데이터셋의 카테고리를 참조. 데이터셋은 여러 테마와 연결 가능',lv:['권장','필수','필수'],kind:'tags',ph:'예: 보건통계, 만성질환 …',json:'langlist'},
  {id:'accessRights',ko:'접근 권한',qn:'dct:accessRights',desc:'데이터에 대한 접근권한 기입',lv:['선택','필수','필수'],kind:'select',
   opts:[['','선택하세요'],['PUBLIC','공개 (public)'],['RESTRICTED','제한 공개 (restricted)'],['NON_PUBLIC','비공개 (non-public)']],json:'uri',base:'http://publications.europa.eu/resource/authority/access-right/'},
- {id:'identifier',ko:'식별자',qn:'dct:identifier',desc:'플랫폼에서 관리하는 데이터셋의 중복되지 않는 고유 식별자 기입',lv:['선택','필수','필수'],kind:'text',ph:'예: NDI-2026-000482'},
+ {id:'identifier',ko:'식별자',qn:'dct:identifier',desc:'플랫폼에서 관리하는 데이터셋의 중복되지 않는 고유 식별자. 작성 시각을 기준으로 KHDP-연월일시분초 형식으로 자동 부여됩니다',lv:['선택','필수','필수'],kind:'text',auto:true,ph:'KHDP-20260101090000'},
  {id:'admsIdentifier',ko:'보조식별자',qn:'adms:identifier',desc:'MAST/ADS, DataCite, DOI, EZID 또는 W3ID와 같은 데이터셋의 보조 식별자 기입',lv:['선택','필수','필수'],kind:'scheme',ph:'예: 10.1234/abcd.2024',
   opts:[['DOI','DOI'],['DATACITE','DataCite'],['MAST/ADS','MAST/ADS'],['EZID','EZID'],['W3ID','W3ID']]},
  {id:'contactPoint',ko:'담당자 연락처',qn:'dcat:contactPoint',desc:'데이터셋 담당자에 대한 연락처 정보를 기입',lv:['권장','권장','권장'],kind:'contact'},
  {id:'keyword',ko:'키워드',qn:'dcat:keyword',desc:'상품을 설명할 수 있는 대표 키워드 기입',lv:['권장','권장','권장'],kind:'tags',ph:'엔터로 추가',json:'langlist'},
- {id:'publisher',ko:'데이터 발행기관',qn:'dct:publisher',desc:'데이터를 게재하여 제공하는 기관(플랫폼 사업자번호)의 정보 기입',lv:['권장','권장','권장'],kind:'text',ph:'예: 질병관리청'},
  {id:'distribution',ko:'배포방식',qn:'dcat:distribution',desc:'배포방식에 대한 데이터세트를 의미하며, CSV·XLSX와 같이 특정한 파일 형태로 내려받거나 접근할 수 있는 배포본을 기입. 여러 개면 쉼표로 구분',lv:['','권장','권장'],kind:'formats',ph:'예: CSV, XLSX'},
+ {id:'publisher',ko:'데이터 발행기관',qn:'dct:publisher',desc:'데이터셋을 발행·공개하는 기관을 기입',lv:['권장','권장','권장'],kind:'text',ph:'예: 질병관리청'},
  {id:'spatial',ko:'지리적 범위',qn:'dct:spatial',desc:'데이터셋에서 다루는 지리적 지역',lv:['','권장','권장'],kind:'text',ph:'예: 대한민국 전역 / 서울특별시'},
  {id:'temporal',ko:'기간',qn:'dct:temporal',desc:'데이터셋에서 다루는 기간',lv:['','권장','권장'],kind:'daterange',json:'period'},
  {id:'hasPurpose',ko:'목적',qn:'dpv:hasPurpose',desc:'데이터 수집 또는 생성의 목적 및 활용 의도',lv:['','권장','권장'],kind:'tags',ph:'예: 공중보건 연구, 정책 수립'},
@@ -491,7 +513,6 @@ const DATASET=[
  {id:'hasPersonalData',ko:'개인정보 포함 여부',qn:'dpv:hasPersonalData',desc:'개인정보 포함 여부 또는 개인정보 수준',lv:['','권장','권장'],kind:'personal'},
  {id:'hasLegalBasis',ko:'법적 근거',qn:'dpv:hasLegalBasis',desc:'데이터 수집·처리의 법적 근거',lv:['','권장','권장'],kind:'tags',ph:'예: Consent, LegalObligation'},
  {id:'retentionPeriod',ko:'데이터 보관 기간',qn:'healthdcatap:retentionPeriod',desc:'데이터 보관 기간',lv:['','권장','권장'],kind:'daterange',json:'period'},
- {id:'custodian',ko:'데이터 관리기관',qn:'dct:publisher',desc:'데이터를 보유·관리하는 기관',lv:['','권장','권장'],kind:'text',ph:'예: 국민건강보험공단'},
  {id:'hasCodingSystem',ko:'코딩 체계',qn:'healthdcatap:hasCodingSystem',desc:'사용된 의료 코드 체계 (예: ICD, SNOMED 등)',lv:['','권장','권장'],kind:'tags',ph:'예: ICD-10, SNOMED CT, KCD'},
  {id:'healthTheme',ko:'(보건의료)주제',qn:'healthdcatap:healthTheme',desc:'보건의료 주제 분류',lv:['','권장','권장'],kind:'tags',ph:'예: 질병 예방, 의료 이용'},
  {id:'hasCodeValues',ko:'코드 값',qn:'healthdcatap:hasCodeValues',desc:'코딩시스템의 코드 값 목록 또는 코드 정의 정보',lv:['','권장','권장'],kind:'tags',ph:'예: I10, E11.9'},
@@ -513,9 +534,27 @@ const CTX={"dct":"http://purl.org/dc/terms/","dcat":"http://www.w3.org/ns/dcat#"
  "foaf":"http://xmlns.com/foaf/0.1/","vcard":"http://www.w3.org/2006/vcard/ns#","dpv":"https://w3id.org/dpv#",
  "healthdcatap":"http://healthdataportal.eu/ns/health#","dcatap":"http://data.europa.eu/r5r/","dqv":"http://www.w3.org/ns/dqv#"};
 
+/* ============================================================
+   식별자 자동 부여 — KHDP-연월일시분초 (KHDP-YYYYMMDDHHMMSS)
+   플랫폼이 관리하는 값이므로 사람이 직접 적지 않고 생성 시각으로 채운다.
+   ============================================================ */
+const ID_PREFIX='KHDP';
+function idStamp(d){
+  d=d||new Date();
+  const p=n=>String(n).padStart(2,'0');
+  return ''+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds());
+}
+function newId(d){ return ID_PREFIX+'-'+idStamp(d); }
+/* 한 파일에 여러 건을 담을 때 겹치지 않게 1초씩 띄워 발급 */
+function newIdSeq(n){
+  const t=Date.now();
+  return Array.from({length:n},(_,i)=>newId(new Date(t+i*1000)));
+}
+const isAutoId=v=>/^KHDP-\d{14}$/.test(String(v||'').trim());
+
 /* ===== 상태 ===== */
 let TARGET='dataset', FILTER='all', TABLEVIEW=false;
-const ds={};                 // 데이터셋 값
+const ds={identifier:newId()};   // 데이터셋 값 — 식별자는 열자마자 자동 부여
 let dists=[{}], distSeq=1;   // 배포 값 목록
 
 const lvOf=f=>f.lv[2]||f.lv[1]||f.lv[0]||'';
@@ -530,6 +569,14 @@ function ctrl(f,val,onch,ns){
   let h='';
   switch(f.kind){
     case 'text': case 'url': case 'email':
+      if(f.auto){
+        h=`<div class="autoid">
+             <input type="text" id="${id}" value="${esc(val||'')}" readonly aria-readonly="true" title="자동으로 부여된 식별자입니다">
+             <button type="button" class="idbtn" id="${id}_re">현재 시각으로 다시 부여</button>
+           </div>
+           <div class="autonote">자동 부여 · 작성 시각 기준 ${ID_PREFIX}-연월일시분초</div>`;
+        break;
+      }
       h=`<input type="${f.kind==='text'?'text':f.kind}" id="${id}" placeholder="${esc(f.ph||'')}" ${f.max?`maxlength="${f.max}"`:''} value="${esc(val||'')}">`;break;
     case 'textarea':
       h=`<textarea id="${id}" placeholder="${esc(f.ph||'')}" ${f.max?`maxlength="${f.max}"`:''}>${esc(val||'')}</textarea>`;break;
@@ -572,6 +619,12 @@ function bind(f,ns,get,put){
   };
   switch(f.kind){
     case 'text':case 'url':case 'email':case 'textarea':case 'number':case 'select':
+      if(f.auto){
+        if(!get()){const v=newId();put(v);const inp=el(id);if(inp)inp.value=v;}   // 비어 있으면 즉시 부여
+        const re=el(id+'_re');
+        re&&re.addEventListener('click',()=>{put(newId());render();refresh();toast('식별자를 새로 부여했습니다');});
+        break;
+      }
       el(id)&&el(id).addEventListener('input',e=>{put(e.target.value);refresh();});break;
     case 'tags':
       tagAdd(id,id+'_box',()=>get()||[],v=>put(v));break;
@@ -814,8 +867,8 @@ function paintXDistPeek(){
   box.innerHTML=XDIST.map(r=>{
     const bad=orphan.has(r.__row)||!(r.accessURL||'').trim();
     return `<button type="button" class="pk ${bad?'warn':''}" data-row="${r.__row}">
-      <b>${r.__row}행${r.format?' · '+r.format:''}${orphan.has(r.__row)?' · 연결 안 됨':''}</b>
-      <span>${(r.accessURL||'접근 URL 없음').replace(/&/g,'&amp;').replace(/</g,'&lt;')}<br>← ${r.__ds||'데이터셋식별자 없음'}</span>
+      <b>${r.__row}행${r.format?' · '+r.format:''}${orphan.has(r.__row)?' · 연결할 데이터셋 필요':''}</b>
+      <span>${(r.accessURL||'접근 URL 없음').replace(/&/g,'&amp;').replace(/</g,'&lt;')}${dsLabel(r)?'<br>← '+hesc(dsLabel(r)):''}</span>
     </button>`;
   }).join('');
   $$('#xDistPeek .pk').forEach(b=>b.addEventListener('click',()=>{
@@ -867,9 +920,11 @@ $('#xKvDs').addEventListener('click',e=>{
 });
 
 let PFMT='jsonld', MODE='manual';
-function paintPreview(){
-  const cm=PFMT==='rdf'?'<!-- ':(PFMT==='ttl'?'# ':'// ');
-  const ce=PFMT==='rdf'?' -->':'';
+
+/* 미리보기를 다시 그릴 때마다 입력이 있는지 보고 반반 여부를 스스로 정한다.
+   기존 호출부는 전부 paintPreview()를 그대로 쓰면 된다. */
+function paintPreview(){ paintPreviewCore(); autoSplit(); }
+function paintPreviewCore(){
   const note=$('#fmtNote'), out=$('#preview');
   let list;
   if(MODE==='excel'){
@@ -879,9 +934,9 @@ function paintPreview(){
     }
     if(!XROWS.length){
       note.textContent=`· 엑셀 배포 ${XDIST.length}행`;
-      const {dOut}=splitGraphs(distOnlyObjs());
-      out.textContent=dOut.length
-        ? cm+'파일 · 배포'+ce+'\n'+serializeAs(PFMT,dOut)
+      const objs=distOnlyObjs();
+      out.textContent=objs.length
+        ? serializeAs(PFMT,objs)
         : '배포 행에서 값을 찾지 못했습니다.';
       return;
     }
@@ -891,10 +946,7 @@ function paintPreview(){
     list=[build()];
     note.textContent='· 직접 입력';
   }
-  const {dsOut,dOut}=splitGraphs(list);
-  let t=cm+'파일 1 · 데이터셋'+ce+'\n'+serializeAs(PFMT,dsOut);
-  if(dOut.length)t+='\n\n'+cm+'파일 2 · 배포'+ce+'\n'+serializeAs(PFMT,dOut);
-  out.textContent=t;
+  out.textContent=serializeAs(PFMT,list);
 }
 
 /* ===== JSON-LD ===== */
@@ -922,7 +974,6 @@ function build(){
     if(f.kind==='formats')return;
     const s=serialize(f,ds[f.id],L);
     if(s===undefined)return;
-    if(f.id==='custodian'){ (o["dct:publisher"]=[].concat(o["dct:publisher"]||[],[s])); return; }
     if(f.id==='hasPersonalData'){ o["dpv:hasPersonalData"]=true; const c=(ds[f.id]||{}).cats||[]; if(c.length)o["dpv:hasPersonalDataCategory"]=c; return; }
     o[f.qn]=s;
   });
@@ -1019,24 +1070,7 @@ function download(name,text,mime){
   a.href=URL.createObjectURL(new Blob([text],{type:mime}));
   a.download=name;a.click();URL.revokeObjectURL(a.href);
 }
-/* 데이터셋 그래프와 배포 그래프를 분리 — 배포는 자기 URI를 갖고 데이터셋은 참조만 */
-function splitGraphs(list){
-  const dsOut=[], dOut=[];
-  list.forEach(o=>{
-    const copy={...o}, subj=subjOf(o);
-    const embedded=copy["dcat:distribution"];
-    if(Array.isArray(embedded)&&embedded.length){
-      const uris=embedded.map((_,i)=>subj+'/distribution/'+(i+1));
-      copy["dcat:distribution"]=uris.map(u=>({"@id":u}));
-      embedded.forEach((x,i)=>{
-        const dist={"@id":uris[i],...x}; dist["dct:isPartOf"]={"@id":subj};
-        dOut.push(dist);
-      });
-    }
-    dsOut.push(copy);
-  });
-  return {dsOut,dOut};
-}
+/* 배포는 데이터셋 안에 <dcat:distribution><dcat:Distribution> 로 그대로 들어간다 — 파일은 하나 */
 function jsonldText(list){
   if(list.length===1)return JSON.stringify({"@context":CTX,...strip(list[0])},null,2);
   return JSON.stringify({"@context":CTX,"@graph":list.map(strip)},null,2);
@@ -1048,16 +1082,14 @@ function serializeAs(fmt,list){
 const EXT={ttl:'.ttl',rdf:'.rdf',jsonld:'.jsonld'};
 const MIME={ttl:'text/turtle',rdf:'application/rdf+xml',jsonld:'application/ld+json'};
 
-/* 파일명: HealthDCAT-KR_데이터셋이름_데이터셋.rdf / HealthDCAT-KR_데이터셋이름_배포.rdf */
+/* 파일명: HealthDCAT-KR_데이터셋이름.rdf — 배포까지 한 파일에 담는다 */
 const safeName=s=>String(s||'').trim().replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_').slice(0,60);
 const stemOf=name=>'HealthDCAT-KR_'+(safeName(name)||'이름없음');
 
-function exportAs(fmt,list,stem,only){
-  const {dsOut,dOut}=splitGraphs(list);
-  let n=0;
-  if(only!=='dist'&&dsOut.length){download(stem+'_데이터셋'+EXT[fmt],serializeAs(fmt,dsOut),MIME[fmt]);n++;}
-  if(only!=='ds'&&dOut.length){download(stem+'_배포'+EXT[fmt],serializeAs(fmt,dOut),MIME[fmt]);n++;}
-  return n;
+function exportAs(fmt,list,stem){
+  if(!list.length)return 0;
+  download(stem+EXT[fmt],serializeAs(fmt,list),MIME[fmt]);
+  return 1;
 }
 const fmtLabel=fmt=>fmt==='ttl'?'Turtle':fmt==='rdf'?'RDF/XML':'JSON-LD';
 
@@ -1094,6 +1126,8 @@ function select(t){
   $$('.pick').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.target===t)));
   render();
 }
+/* 비우기 직후에만 되돌릴 수 있다 — 다른 곳을 건드리면 지운다 */
+function dropUndo(){ if(UNDO){UNDO=null;$('#btnUndo').hidden=true;} }
 function syncChips(){$$('#filters .chip').forEach(c=>c.setAttribute('aria-pressed',String(!c.dataset.soon&&c.dataset.f===FILTER)));}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._x);t._x=setTimeout(()=>t.classList.remove('on'),2000);}
 
@@ -1104,15 +1138,66 @@ $$('#filters .chip').forEach(c=>c.addEventListener('click',()=>{
 }));
 $('#btnTable').addEventListener('click',e=>{TABLEVIEW=!TABLEVIEW;e.target.setAttribute('aria-pressed',String(TABLEVIEW));e.target.textContent=TABLEVIEW?'입력 화면으로':'속성 표로 보기';render();});
 $('#btnValidate').addEventListener('click',validate);
+
+/* ---- 비우기 · 되돌리기 ----
+   지금 보고 있는 화면만 비운다. 실수로 눌러도 한 번은 되돌릴 수 있게 직전 값을 들고 있는다. */
+let UNDO=null;
+const snap=()=>JSON.parse(JSON.stringify({target:TARGET,ds,dists}));
+function anyFilled(){
+  return TARGET==='dataset'
+    ? DATASET.some(f=>!f.auto&&filled(f,ds[f.id]))
+    : dists.some(d=>DISTRIBUTION.some(f=>filled(f,d[f.id])));
+}
+function showUndo(on){ $('#btnUndo').hidden=!on; }
+$('#btnClear').addEventListener('click',()=>{
+  const label=TARGET==='dataset'?'데이터셋':'배포';
+  if(!anyFilled()){toast(label+' 화면에 지울 내용이 없습니다');return;}
+  if(!confirm(`${label} 화면의 입력을 모두 비웁니다. 되돌리기로 한 번 되살릴 수 있습니다. 계속할까요?`))return;
+  UNDO=snap();
+  if(TARGET==='dataset'){
+    Object.keys(ds).forEach(k=>{if(k!=='identifier')delete ds[k];});
+  }else{
+    dists.length=0; dists.push({}); distSeq=1;
+  }
+  render(); showUndo(true); toast(label+' 화면을 비웠습니다');
+});
+['input','change'].forEach(ev=>$('#formArea').addEventListener(ev,dropUndo));   // 새로 입력하면 되돌리기는 사라진다
+$('#btnUndo').addEventListener('click',()=>{
+  if(!UNDO){showUndo(false);return;}
+  const u=UNDO; UNDO=null;
+  Object.keys(ds).forEach(k=>delete ds[k]);
+  Object.assign(ds,u.ds);
+  dists.length=0; u.dists.forEach(d=>dists.push(d)); distSeq=dists.length;
+  select(u.target);            // 탭 표시까지 되돌리고 다시 그린다
+  showUndo(false); toast('되돌렸습니다');
+});
 $$('[data-dl]').forEach(b=>b.addEventListener('click',()=>{
   const fmt=b.dataset.dl;
   const name=(ds.title||'').trim()||(ds.identifier||'').trim();
   if(!name){toast('제목을 먼저 입력하면 파일 이름에 들어갑니다');}
-  const n=exportAs(fmt,[build()],stemOf(name));
-  toast(n===2?`${fmtLabel(fmt)} 파일 2개(데이터셋 · 배포)를 내려받았습니다`:`${fmtLabel(fmt)} 데이터셋 파일을 내려받았습니다`);
+  exportAs(fmt,[build()],stemOf(name));
+  toast(`${fmtLabel(fmt)} 파일을 내려받았습니다`);
 }));
-$$('#fmtTabs .chip').forEach(c=>c.addEventListener('click',()=>{
-  PFMT=c.dataset.fmt;$$('#fmtTabs .chip').forEach(x=>x.setAttribute('aria-pressed',String(x===c)));paintPreview();}));
+function setFmt(f){
+  PFMT=f;
+  $$('#fmtTabs .chip').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.fmt===f)));
+  paintPreview();
+}
+$$('#fmtTabs .chip').forEach(c=>c.addEventListener('click',()=>setFmt(c.dataset.fmt)));
+
+/* ===== 반반 보기 =====
+   버튼 없이, 입력이 하나라도 들어오면 좌우 절반으로 벌어지고
+   전부 비면 원래 폭으로 돌아온다. 1060px 이하에서는 CSS가 무시한다. */
+function hasInput(){
+  if(MODE==='excel')return XROWS.length>0||XDIST.length>0;
+  return DATASET.some(f=>!f.auto&&filled(f,ds[f.id]))   // 자동 부여 식별자는 '입력'으로 보지 않는다
+      || dists.some(d=>DISTRIBUTION.some(f=>filled(f,d[f.id])));
+}
+function autoSplit(){
+  const on=hasInput(), w=$('.wrap');
+  if(w.classList.contains('split')!==on)w.classList.toggle('split',on);
+}
+
 $('#langSel').addEventListener('change',()=>{render();});
 
 /* ============================================================
@@ -1120,37 +1205,46 @@ $('#langSel').addEventListener('change',()=>{render();});
    ============================================================ */
 const XL_DS_SHEET='데이터셋', XL_DIST_SHEET='배포';
 const EX={title:'국민건강영양조사 2024',description:'2024년 국민 건강·영양 실태 조사 결과 데이터',theme:'보건의료, 영양',
- accessRights:'RESTRICTED',identifier:'NDI-2026-000482',admsIdentifier:'10.1234/abcd.2024',
- contactPoint:'data@example.go.kr',keyword:'건강, 영양조사, 국민건강',publisher:'질병관리청',
+ accessRights:'RESTRICTED',identifier:'KHDP-20260101090000',admsIdentifier:'10.1234/abcd.2024',
+ contactPoint:'data@example.go.kr',keyword:'건강, 영양조사, 국민건강',distribution:'CSV, XLSX',publisher:'질병관리청',
  spatial:'대한민국',temporal:'2024-01-01 ~ 2024-12-31',hasPurpose:'공중보건 연구',
  populationCoverage:'2024년 국내 거주 만 1세 이상 국민 표본',numberOfUniqueIndividuals:'8000',numberOfRecords:'8000',
  maxTypicalAge:'80',minTypicalAge:'1',hasPersonalData:'포함',hasLegalBasis:'통계법 제18조',
- retentionPeriod:'2025-01-01 ~ 2035-12-31',custodian:'국민건강보험공단',hasCodingSystem:'ICD-10, KCD-8',
+ retentionPeriod:'2025-01-01 ~ 2035-12-31',hasCodingSystem:'ICD-10, KCD-8',
  healthTheme:'건강행태',hasCodeValues:'I10, E11.9',qualityAnnotation:'결측률 2% 이하, 내부 검증 완료',
  accessURL:'https://data.example.go.kr/dataset/123',availability:'available',format:'CSV',license:'공공누리 제1유형'};
 
-const XLDS=DATASET.filter(f=>f.kind!=='formats');           // 배포방식은 별도 시트
+const XLDS=DATASET.slice();   // 배포방식 열 포함 · 실제 배포 내용은 배포 양식이 원본
 const XLDIST=DISTRIBUTION;
 const colName=f=>f.ko;
-const hdr=f=>`${f.ko} [${lvOf(f)||'선택'}]`;
+const hdr=f=>`${f.ko} [${lvOf(f)||'선택'}${f.auto?'·자동':''}]`;
 
 function needLib(){ if(typeof XLSX==='undefined'){toast('엑셀 기능을 불러오지 못했습니다. 네트워크를 확인하세요');return true;} return false; }
 
+const XL_BLANK=5;                 // 양식에 미리 깔아 두는 빈 행 수
 function templateAoA(){
+  /* 두 양식 어디에도 식별자를 미리 채우지 않는다 — 내려받은 시각에 매이지 않게.
+     식별자는 올리는 순간 부여하고, 배포는 첫 열에 데이터셋 '제목'을 적어 연결한다. */
   const dsAoa=[XLDS.map(hdr),XLDS.map(f=>f.qn),XLDS.map(f=>EX[f.id]||'')];
-  for(let i=0;i<5;i++)dsAoa.push(new Array(XLDS.length).fill(''));
-  const dHead=['데이터셋식별자 [필수]',...XLDIST.map(hdr)];
-  const dAoa=[dHead,['dct:identifier',...XLDIST.map(f=>f.qn)],[EX.identifier,...XLDIST.map(f=>EX[f.id]||'')]];
-  for(let i=0;i<5;i++)dAoa.push(new Array(dHead.length).fill(''));
+  for(let i=0;i<XL_BLANK;i++)dsAoa.push(new Array(XLDS.length).fill(''));
+  const dHead=['연결 데이터셋 [선택]',...XLDIST.map(hdr)];
+  /* 3행 예시에는 연결 칸을 적는 자리를 보여 준다 — 데이터셋 양식 예시의 제목과 같은 값 */
+  const dAoa=[dHead,['dct:title',...XLDIST.map(f=>f.qn)],[EX.title||'',...XLDIST.map(f=>EX[f.id]||'')]];
+  for(let i=0;i<XL_BLANK;i++)dAoa.push(new Array(dHead.length).fill(''));
   return {dsAoa,dAoa};
 }
 function guideAoA(kind){
   const fs=kind==='ds'?XLDS:XLDIST;
   const rows=[['항목','구분','속성명','설명']];
-  if(kind==='dist')rows.push(['데이터셋식별자','필수','dct:identifier','연결할 데이터셋의 식별자']);
+  if(kind==='dist')rows.push(['연결 데이터셋','선택','dct:title','연결할 데이터셋의 제목 (3행 예시 참고). 비워 두면 함께 올린 데이터셋에 자동으로 연결됩니다']);
   fs.forEach(f=>rows.push([f.ko,lvOf(f)||'선택',f.qn,f.desc]));
+  const note=kind==='ds'
+    ? [['식별자(dct:identifier)는 사람이 적는 값이 아닙니다. 비워 두시면 파일을 올릴 때 KHDP-연월일시분초 형식으로 자동 부여됩니다.']]
+    : [['첫 열 연결 데이터셋은 비워 두세요. 데이터셋 양식과 함께 올리면 적은 순서대로 1:1로 연결됩니다 — 첫 배포 행은 첫 데이터셋 행에 붙습니다. 배포 양식만 올려도 그대로 처리됩니다.'],
+       ['순서가 다르거나, 한 데이터셋에 배포를 여러 건 달 때만 첫 열에 연결할 데이터셋의 제목을 적어 주세요. 3행 예시의 첫 칸이 그 자리입니다.']];
   return [[kind==='ds'?'HealthDCAT-KR 데이터셋 작성 양식':'HealthDCAT-KR 배포 작성 양식'],
-    ['4행부터 한 행에 하나씩 입력하세요. 여러 값은 쉼표로, 기간은 2024-01-01 ~ 2024-12-31 형식으로 씁니다.'],[],...rows];
+    ['4행부터 한 행에 하나씩 입력하세요. 여러 값은 쉼표로, 기간은 2024-01-01 ~ 2024-12-31 형식으로 씁니다.'],
+    ...note,[],...rows];
 }
 function csvText(aoa){
   return '\uFEFF'+aoa.map(r=>r.map(c=>{const s=String(c??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(',')).join('\n');
@@ -1194,19 +1288,37 @@ function cellStr(v){
 /* 첫 열 머리글로 어떤 양식인지 판별 */
 function detectKind(raw){
   const h0=cellStr(raw[0]&&raw[0][0]).replace(/\s/g,'');
-  if(h0.startsWith('데이터셋식별자'))return 'dist';
+  if(h0.startsWith('데이터셋식별자')||h0.startsWith('연결데이터셋'))return 'dist';
   return 'ds';
 }
 function rowsFrom(raw,kind){
   const fields=kind==='ds'?XLDS:XLDIST, extraFirst=(kind==='dist');
   let start=1;
   if(String(raw[start]&&raw[start][0]||'').includes(':'))start++;
-  const ex=extraFirst?[EX.identifier,...fields.map(f=>EX[f.id]||'')]:fields.map(f=>EX[f.id]||'');
-  if(raw[start]&&ex.slice(0,3).every((v,i)=>cellStr(raw[start][i])===String(v)))start++;
-  const keys=extraFirst?['__ds',...fields.map(f=>f.id)]:fields.map(f=>f.id);
+  /* 3행 예시 건너뛰기 — 식별자 칸은 내려받은 시각마다 달라지므로 비교에서 뺀다 */
+  const ex=extraFirst?[null,...fields.map(f=>EX[f.id]||'')]:fields.map(f=>f.id==='identifier'?null:(EX[f.id]||''));
+  const probe=ex.slice(0,4).map((v,i)=>[i,v]).filter(([,v])=>v!==null&&v!=='');
+  if(raw[start]&&probe.length&&probe.every(([i,v])=>cellStr(raw[start][i])===String(v)))start++;
+  /* 2행(속성명)이 있으면 열 순서가 아니라 속성명으로 맞춘다 — 예전에 받은 양식도 그대로 읽힌다 */
+  const qnRow=String(raw[1]&&raw[1][0]||'').includes(':')?raw[1]:null;
+  let keys;
+  if(qnRow){
+    const byQn=new Map(fields.map(f=>[f.qn,f.id]));
+    keys=qnRow.map((c,j)=>(extraFirst&&j===0)?'__ds':(byQn.get(cellStr(c))||null));
+  }else{
+    keys=extraFirst?['__ds',...fields.map(f=>f.id)]:fields.map(f=>f.id);
+  }
+  /* 미리 깔아 둔 식별자만 있고 나머지가 빈 행은 '작성하지 않은 행'으로 본다 */
+  const idCols=keys.reduce((a,k,j)=>(k==='identifier'||k==='__ds')?a.concat(j):a,[]);
   return raw.slice(start)
-    .filter(r=>r.some(c=>cellStr(c)!==''))
-    .map((r,i)=>{const o={__row:start+i+1};keys.forEach((k,j)=>o[k]=cellStr(r[j]));return o;});
+    .filter(r=>r.some((c,j)=>!idCols.includes(j)&&cellStr(c)!==''))
+    .map((r,i)=>{
+      const o={__row:start+i+1};
+      keys.forEach((k,j)=>{if(k)o[k]=cellStr(r[j]);});
+      if(kind==='dist')o.__dsRaw=(o.__ds||'').trim();   // 사람이 적은 원문 — 제목일 수도 식별자일 수도 있다
+      if(kind==='ds'&&!o.identifier)o.identifier=newId(new Date(Date.now()+i*1000));  // 비었으면 자동 부여
+      return o;
+    });
 }
 
 function readFiles(fileList){
@@ -1271,6 +1383,7 @@ function dropSlot(k){
 function afterUpload(msgs){
   paintSlots();
   if(!XROWS.length&&!XDIST.length){toast((msgs&&msgs[0])||'데이터 행을 찾지 못했습니다');return;}
+  linkBlankDist();
   $('#xlStep3').hidden=false;
   $('#xlErrors').innerHTML='';
   LASTERRS=null; ERRONLY=false;
@@ -1294,15 +1407,65 @@ function cellError(f,val){
   if(f.id==='minTypicalAge'||f.id==='maxTypicalAge'){if(+v<0||+v>150)return '0~150 범위';}
   return '';
 }
-function orphanRows(){
-  return XDIST.filter(r=>!r.__ds||(XROWS.length&&!XROWS.some(d=>d.identifier===r.__ds)));
+/* 배포 행의 연결 칸을 데이터셋에 맞춰 푼다. 아무것도 안 적었을 때가 기본이다.
+   1) 데이터셋이 한 건이면 그 데이터셋
+   2) 여러 건이면 적은 순서대로 1:1 — 첫 배포는 첫 데이터셋, 둘째는 둘째
+   3) 제목(또는 이미 발급된 식별자)을 적었으면 그쪽이 우선 */
+const normKey=s=>String(s||'').trim().toLowerCase().replace(/\s+/g,'');
+/* 화면에는 식별자 대신 연결된 데이터셋의 제목을 보여 준다 */
+function dsLabel(r){
+  const v=(r.__ds||'').trim(); if(!v)return '';
+  const hit=XROWS.find(d=>d.identifier===v);
+  return (hit&&(hit.title||'').trim())||r.__dsRaw||v;
 }
+function linkBlankDist(){
+  if(!XROWS.length)return;
+  XDIST.forEach((r,i)=>{
+    const key=(r.__dsRaw||'').trim();
+    if(!key){
+      const pair=XROWS.length===1?XROWS[0]:XROWS[i];   // 순서대로 1:1
+      if(pair)r.__ds=pair.identifier;
+      return;
+    }
+    if(XROWS.some(d=>d.identifier===key)){r.__ds=key;return;}
+    const hit=XROWS.find(d=>normKey(d.title)===normKey(key));
+    if(hit)r.__ds=hit.identifier;
+  });
+}
+function orphanRows(){
+  return XDIST.filter(r=>(r.__ds||'').trim()
+    ? (XROWS.length&&!XROWS.some(d=>d.identifier===r.__ds))
+    : XROWS.length>1);
+}
+/* 데이터셋 시트의 배포방식 열과 배포 시트의 파일 형식이 어긋나는지 본다 */
+const XFMT_FIELD=DATASET.find(f=>f.kind==='formats');
+function fmtListOf(s){
+  const known=new Map((XLDIST.find(f=>f.id==='format').opts||[])
+    .filter(([o])=>o).map(([o])=>[o.toUpperCase(),o]));
+  return String(s||'').split(/[,;·、\/|]+/).map(x=>x.trim()).filter(Boolean)
+    .map(x=>{const k=x.toUpperCase().replace(/\s+/g,'');return known.get(k)||known.get(FMT_ALIAS[k]||'')||x;});
+}
+function formatMismatch(r){
+  if(!XFMT_FIELD||!XDIST.length)return [];
+  const want=fmtListOf(r[XFMT_FIELD.id]);
+  if(!want.length)return [];
+  const have=XDIST.filter(d=>d.__ds&&d.__ds===r.identifier).map(d=>(d.format||'').trim().toUpperCase());
+  return want.filter(f=>!have.includes(f.toUpperCase()));
+}
+
 function scanErrors(){
   const errs=[];
   XROWS.forEach((r,i)=>XLDS.forEach(f=>{const e=cellError(f,r[f.id]);if(e)errs.push({kind:'ds',row:r.__row,n:i+1,col:f.ko,msg:e});}));
+  XROWS.forEach((r,i)=>{
+    const miss=formatMismatch(r);
+    if(miss.length)errs.push({kind:'ds',row:r.__row,n:i+1,col:XFMT_FIELD.ko,
+      msg:'배포 양식에 '+miss.join(' · ')+' 행이 없습니다'});
+  });
   XDIST.forEach((r,i)=>{
-    if(!r.__ds)errs.push({kind:'dist',row:r.__row,n:i+1,col:'데이터셋식별자',msg:'필수값 누락'});
-    else if(XROWS.length&&!XROWS.some(d=>d.identifier===r.__ds))errs.push({kind:'dist',row:r.__row,n:i+1,col:'데이터셋식별자',msg:'데이터셋 양식에 없는 식별자'});
+    if(!(r.__ds||'').trim()){
+      if(XROWS.length)errs.push({kind:'dist',row:r.__row,n:i+1,col:'연결 데이터셋',msg:'순서로 짝지을 데이터셋이 없습니다 — 연결할 데이터셋 제목을 적어 주세요'});
+    }
+    else if(XROWS.length&&!XROWS.some(d=>d.identifier===r.__ds))errs.push({kind:'dist',row:r.__row,n:i+1,col:'연결 데이터셋',msg:'데이터셋 양식에서 찾을 수 없는 제목입니다'});
     XLDIST.forEach(f=>{const e=cellError(f,r[f.id]);if(e)errs.push({kind:'dist',row:r.__row,n:i+1,col:f.ko,msg:e});});
   });
   return errs;
@@ -1312,7 +1475,7 @@ function paintXl(errs){
   const isDs=XSHEET==='dataset';
   const rows=isDs?XROWS:XDIST;
   const mine=(errs||[]).filter(e=>e.kind===(isDs?'ds':'dist'));
-  const cols=[]; if(!isDs)cols.push({key:'__ds',label:'데이터셋식별자',lv:'필수'});
+  const cols=[]; if(!isDs)cols.push({key:'__ds',label:'연결 데이터셋',lv:'선택'});
   (isDs?XLDS:XLDIST).forEach(f=>cols.push({key:f.id,label:f.ko,lv:lvOf(f)||'선택',qn:f.qn}));
 
   if(!rows.length){
@@ -1343,8 +1506,8 @@ function cardHTML(rows,cols,mine,isDs,errs){
       : es.length?`<span class="rstat bad">오류 ${es.length}건</span>`:`<span class="rstat ok">통과</span>`;
     const title = isDs ? (r.title||'(제목 없음)') : (r.accessURL||'(접근 URL 없음)');
     const meta = isDs
-      ? [['식별자',r.identifier],['발행기관',r.publisher],['기간',r.temporal],['배포',(XDIST.filter(d=>d.__ds&&d.__ds===r.identifier).length||0)+'건']]
-      : [['연결 데이터셋',r.__ds],['형식',r.format],['가용성',r.availability],['라이선스',r.license]];
+      ? [['식별자',r.identifier],['데이터 발행기관',r.publisher],['기간',r.temporal],['배포',(XDIST.filter(d=>d.__ds&&d.__ds===r.identifier).length||0)+'건']]
+      : [['연결 데이터셋',dsLabel(r)],['형식',r.format],['가용성',r.availability],['라이선스',r.license]];
     const errchips = es.length?`<div class="recerr">`+es.map(e=>`<span class="ecol">${hesc(e.col)} <span>${hesc(e.msg)}</span></span>`).join('')+`</div>`:'';
     const dl = cols.map(c=>{
       const v=r[c.key]||'', bad=es.some(e=>e.col===c.label);
@@ -1415,7 +1578,7 @@ function refreshXl(){
   const reqDs=XLDS.filter(f=>lvOf(f)==='필수'), reqD=XLDIST.filter(f=>lvOf(f)==='필수');
   let need=0,have=0;
   XROWS.forEach(r=>reqDs.forEach(f=>{need++;if((r[f.id]||'').trim())have++;}));
-  XDIST.forEach(r=>{need++;if((r.__ds||'').trim())have++;reqD.forEach(f=>{need++;if((r[f.id]||'').trim())have++;});});
+  XDIST.forEach(r=>{reqD.forEach(f=>{need++;if((r[f.id]||'').trim())have++;});});
   $('#xReqNow').textContent=have; $('#xReqAll').textContent=need;
   $('#xProgBar').style.width=(need?Math.round(have/need*100):0)+'%';
   $('#xKvDs').textContent=XROWS.length+'행';
@@ -1453,13 +1616,20 @@ $('#xlValidate').addEventListener('click',()=>{
   toast(LASTERRS.length?`오류 ${LASTERRS.length}건을 찾았습니다`:'검증을 통과했습니다');
 });
 
-/* 배포 양식만 올라온 경우 — 데이터셋식별자별로 묶은 임시 그래프 */
+/* 배포 양식만 올라온 경우 — 연결 데이터셋 칸으로 묶은 임시 그래프 */
 function distOnlyObjs(){
   const groups={};
-  XDIST.forEach(r=>{const k=(r.__ds||'').trim()||'연결안된배포';(groups[k]=groups[k]||[]).push(r);});
-  return Object.entries(groups).map(([k,rows])=>{
+  XDIST.forEach(r=>{const k=(r.__dsRaw||'').trim();(groups[k]=groups[k]||[]).push(r);});
+  const t0=Date.now();
+  return Object.entries(groups).map(([k,rows],i)=>{
     const list=rows.map(distObj).filter(Boolean);
-    return list.length?{"@context":CTX,"@type":"dcat:Dataset","dct:identifier":k,"dcat:distribution":list}:null;
+    if(!list.length)return null;
+    /* 적어 둔 값이 이미 발급된 식별자면 그대로 쓰고, 아니면 지금 새로 부여한다.
+       제목을 적어 뒀다면 담을 데이터셋의 제목으로 살린다. */
+    const o={"@context":CTX,"@type":"dcat:Dataset","dct:identifier":isAutoId(k)?k:newId(new Date(t0+i*1000))};
+    if(k&&!isAutoId(k))o["dct:title"]={"@value":k,"@language":LANG()};
+    o["dcat:distribution"]=list;
+    return o;
   }).filter(Boolean);
 }
 
@@ -1476,8 +1646,8 @@ function rowToObj(r){
   const L=LANG(), o={"@context":CTX,"@type":"dcat:Dataset"};
   const splitList=v=>v.split(/[,;]/).map(s=>s.trim()).filter(Boolean);
   XLDS.forEach(f=>{
+    if(f.kind==='formats')return;          // 배포방식 열은 안내·대조용 — 실제 배포는 배포 양식에서 만든다
     const v=(r[f.id]||'').trim(); if(!v)return;
-    if(f.id==='custodian'){o["dct:publisher"]=[].concat(o["dct:publisher"]||[],[v]);return;}
     if(f.id==='hasPersonalData'){const yes=/포함|true|y|예/i.test(v)&&!/미포함/.test(v);o["dpv:hasPersonalData"]=yes;return;}
     switch(f.json){
       case 'lang':o[f.qn]={"@value":v,"@language":L};break;
@@ -1501,19 +1671,19 @@ $$('[data-xdl]').forEach(b=>b.addEventListener('click',()=>{
   const fmt=b.dataset.xdl;
   if(!XROWS.length&&!XDIST.length){toast('먼저 파일을 올려주세요');return;}
 
-  /* 배포 양식만 올린 경우 — 데이터셋식별자별로 배포 파일만 내려받는다 */
+  /* 배포 양식만 올린 경우 — 연결 데이터셋 칸으로 묶어 내려받는다 */
   if(!XROWS.length){
     const objs=distOnlyObjs();
     if(!objs.length){toast('배포 행에서 값을 찾지 못했습니다');return;}
-    if(objs.length>10&&!confirm(`데이터셋식별자 ${objs.length}개로 나눠 내려받습니다. 계속할까요?`))return;
+    if(objs.length>10&&!confirm(`데이터셋 ${objs.length}건으로 나눠 내려받습니다. 계속할까요?`))return;
     objs.forEach((o,i)=>setTimeout(()=>{
-      exportAs(fmt,[o],stemOf(o["dct:identifier"]),'dist');
+      exportAs(fmt,[o],stemOf(o["dct:identifier"]));
     },i*250));
     setTimeout(()=>toast(`${fmtLabel(fmt)} · 배포 ${XDIST.length}행을 파일 ${objs.length}개로 내려받았습니다`),objs.length*250);
     return;
   }
 
-  if(XROWS.length>10&&!confirm(`데이터셋 ${XROWS.length}건을 각각 따로 내려받습니다. 파일이 최대 ${XROWS.length*2}개 생깁니다. 계속할까요?`))return;
+  if(XROWS.length>10&&!confirm(`데이터셋 ${XROWS.length}건을 각각 한 파일로 내려받습니다. 파일이 ${XROWS.length}개 생깁니다. 계속할까요?`))return;
   XROWS.forEach((r,i)=>{
     const name=(r.title||'').trim()||(r.identifier||'').trim()||(r.__row+'행');
     setTimeout(()=>{exportAs(fmt,[rowToObj(r)],stemOf(name));},i*250);
